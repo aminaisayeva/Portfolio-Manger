@@ -11,7 +11,7 @@
 
 **Usage:**
 
-1. Ensure `yfinance` is installed:  
-   `pip install yfinance`
+1. Ensure `yfinance` version 0.2.65 is installed:  
+   `pip install yfinance[nospam]`
 2. Run the script:  
    `python dummy.py'
