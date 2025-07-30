@@ -15,3 +15,7 @@
    `pip install yfinance[nospam]`
 2. Run the script:  
    `python dummy.py'
+
+## Imports
+
+- pip install flask flask_sqlalchemy flask_cors python-dotenv pymysql yfinance[nospam] mysql-connector-python
