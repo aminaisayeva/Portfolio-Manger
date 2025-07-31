@@ -13,9 +13,6 @@ print(info.get('longName') + " \nCurrent Price: " + info.get('currentPrice', 'N/
 
 print_portfolio(10)
 
-print("Stock added to portfolio.")
-
-
 
 
 
