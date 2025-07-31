@@ -1,0 +1,92 @@
+/* src/components/PortfolioTable.css */
+
+.table-wrapper {
+  background: #fff;
+  border-radius: .5rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.table-search {
+  margin-bottom: 0.75rem;
+}
+
+.table-search input {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.portfolio-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.portfolio-table .symbol {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.no-results {
+  text-align: center;
+  color: #777;
+  padding: 1rem;
+}
+
+
+/* make the header into a flex row */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+/* style for the inline search input */
+.table-search-inline {
+  width: 240px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* constrain table height and allow internal scrolling */
+.table-container {
+  max-height: 400px;        
+  overflow-y: auto;
+}
+
+/* rest of  existing table styling */
+.portfolio-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.portfolio-table th,
+.portfolio-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.symbol {
+  color: #777;
+  font-size: 0.85rem;
+}
+
+.no-results {
+  text-align: center;
+  color: #777;
+  padding: 1rem;
+}
