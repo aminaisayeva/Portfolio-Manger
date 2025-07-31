@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { executeTrade } from '../api/portfolio'
+import './TradeModal.css'
 
 type TradeModalProps = {
   symbol: string
@@ -14,8 +15,9 @@ export default function TradeModal({
   isOpen,
   onClose,
 }: TradeModalProps) {
-  const [type,   setType]   = useState<'buy'|'sell'>('buy')
-  const [amount, setAmount] = useState<number>(0)
+  const [type, setType]     = useState<'buy'|'sell'>('buy')
+  const [amount, setAmount] = useState<string>('')       // string to allow clearing
+  const [error, setError]   = useState<string|null>(null)
 
   // close on Esc
   useEffect(() => {
@@ -27,19 +29,22 @@ export default function TradeModal({
   }, [isOpen, onClose])
 
   async function submit() {
-    await executeTrade(symbol, amount, type)
+    const n = parseInt(amount, 10)
+    if (!amount || isNaN(n) || n <= 0) {
+      setError('Please enter a positive integer')
+      return
+    }
+    setError(null)
+    await executeTrade(symbol, n, type)
     onClose()
   }
 
   if (!isOpen) return null
 
-  // portal into document.body
   return createPortal(
     <div className="modal-overlay" onClick={onClose}>
-      <div
-        className="modal-content"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="modal-content" onClick={e => e.stopPropagation()}>
+        <button className="close-btn" onClick={onClose}>×</button>
         <h2>Trade: {symbol}</h2>
 
         <div className="trade-buttons">
@@ -60,13 +65,24 @@ export default function TradeModal({
         <div className="trade-input">
           <label>Amount</label>
           <input
-            type="number"
+            type="text"
+            inputMode="numeric"
+            pattern="\d*"
+            placeholder="0"
             value={amount}
-            onChange={e => setAmount(+e.target.value)}
+            onKeyPress={e => {
+              if (!/[0-9]/.test(e.key)) e.preventDefault()
+            }}
+            onChange={e => {
+              const v = e.target.value
+              if (/^\d*$/.test(v)) setAmount(v)
+            }}
           />
         </div>
 
-        <button onClick={submit}>Submit</button>
+        {error && <div className="error-banner">{error}</div>}
+
+        <button className="submit-btn" onClick={submit}>Submit</button>
       </div>
     </div>,
     document.body
