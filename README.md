@@ -18,4 +18,4 @@
 
 ## Imports
 
-- pip install flask flask_sqlalchemy flask_cors python-dotenv pymysql yfinance[nospam] mysql-connector-python
+- pip install flask flask_sqlalchemy flask_cors python-dotenv pymysql yfinance[nospam] mysql-connector-python pandas
