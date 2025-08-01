@@ -1,7 +1,6 @@
-// src/App.tsx
 import React, { useEffect, useState } from "react";
 import Header from "./components/Header";
-import Dashboard from "./Dashboard"; //  existing Dashboard container
+import Dashboard from "./Dashboard";
 import MarketPage from "./components/MarketPage";
 import { fetchLocalPortfolio as fetchPortfolio } from "./api/localData";
 import { allStocks } from "./data/allStocks";
@@ -19,21 +18,19 @@ export default function App() {
     fetchPortfolio().then(setPortfolio).catch(console.error);
   }, []);
 
-  // show a loading state if dashboard needs it
+  // loading state
   if (view === "dashboard" && !portfolio) {
     return <div className="loading">Loading portfolio…</div>;
   }
 
   return (
     <div className="app-container">
-      {/* pass activeTab + nav callback into Header */}
-      <Header activeTab={view} onNav={(tab) => setView(tab)} />
+      <Header activeTab={view} onNav={setView} />
 
       <main className="content">
         {view === "dashboard" && portfolio && (
           <Dashboard portfolios={portfolio} />
         )}
-
         {view === "market" && <MarketPage availableStocks={allStocks} />}
       </main>
     </div>

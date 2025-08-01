@@ -1,7 +1,6 @@
 // src/Dashboard.tsx
 import React, { useEffect, useState } from "react";
 import { fetchPortfolio } from "./api/portfolio";
-import Header from "./components/Header";
 import TotalAssetsSummary from "./components/TotalAssetsSummary";
 import PortfolioChart from "./components/PortfolioChart";
 import ProfitLossSummary from "./components/ProfitLossSummary";
@@ -27,47 +26,43 @@ export default function Dashboard({ portfolios }: DashboardProps) {
   if (!portfolio) return <div>Loading…</div>;
 
   return (
-    <div className="app-container">
-      <div className="content">
-        <div className="main-left">
-          <div className="chart-card">
-            <TotalAssetsSummary
-              total={portfolio.totalValue}
-              changePercent={
-                (portfolio.profitLoss / portfolio.totalValue) * 100
-              }
-              changeAmount={portfolio.profitLoss}
-              selectedPeriod={period}
-              onPeriodChange={setPeriod}
-            />
-            <div className="card-header">
-              <h3>Portfolio performance</h3>
-            </div>
-            <PortfolioChart history={portfolio.history} />
+    <>
+      <div className="main-left">
+        <div className="chart-card">
+          <TotalAssetsSummary
+            total={portfolio.totalValue}
+            changePercent={(portfolio.profitLoss / portfolio.totalValue) * 100}
+            changeAmount={portfolio.profitLoss}
+            selectedPeriod={period}
+            onPeriodChange={setPeriod}
+          />
+          <div className="card-header">
+            <h3>Portfolio performance</h3>
           </div>
-
-          <div className="profit-wrapper">
-            <ProfitLossSummary data={portfolio} />
-          </div>
-
-          <div className="table-card">
-            <div className="card-header">
-              <h3>Portfolio Overview</h3>
-            </div>
-            <PortfolioTable
-              assets={portfolio.assets}
-              onTrade={(sym) => {
-                setTradeSymbol(sym);
-                setModalOpen(true);
-              }}
-            />
-          </div>
+          <PortfolioChart history={portfolio.history} />
         </div>
 
-        <div className="main-right">
-          <MarketMovers assets={portfolio.assets} />
-          <Watchlist items={portfolio.assets.slice(0, 3)} />
+        <div className="profit-summary">
+          <ProfitLossSummary data={portfolio} />
         </div>
+
+        <div className="table-card">
+          <div className="card-header">
+            <h3>Portfolio Overview</h3>
+          </div>
+          <PortfolioTable
+            assets={portfolio.assets}
+            onTrade={(sym) => {
+              setTradeSymbol(sym);
+              setModalOpen(true);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="main-right">
+        <MarketMovers assets={portfolio.assets} />
+        <Watchlist items={portfolio.assets.slice(0, 3)} />
       </div>
 
       {tradeSymbol && (
@@ -77,6 +72,6 @@ export default function Dashboard({ portfolios }: DashboardProps) {
           onClose={() => setModalOpen(false)}
         />
       )}
-    </div>
+    </>
   );
 }

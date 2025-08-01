@@ -51,7 +51,7 @@ export default function PortfolioTable({
             <tr key={a.symbol}>
               <td>{a.name} <span className="symbol">({a.symbol})</span></td>
               <td>${a.price.toFixed(2)}</td>
-              <td>{(a.volume / 1e9).toFixed(2)}B</td>
+              <td>{a.volume}</td>
               <td className={a.change >= 0 ? 'positive' : 'negative'}>
                 {a.change >= 0 ? '+' : ''}{a.change.toFixed(2)}%
               </td>
