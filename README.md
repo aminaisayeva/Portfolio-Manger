@@ -19,3 +19,9 @@
 ## Imports
 
 - pip install flask flask_sqlalchemy flask_cors python-dotenv pymysql yfinance[nospam] mysql-connector-python pandas
+- python Portfolio-Manager/app/backend/app.py
+
+## To Run app
+
+- cd frontend/investment-dashboard
+- npm run dev
