@@ -4,15 +4,16 @@ conn = crud.get_connection()
 cursor = conn.cursor(dictionary=True)
 
 def initialize_portfolio():
-    cursor.execute("SELECT pi_symbol, pi_weighted_average_price FROM portfolio_item")
+    cursor.execute("SELECT pt_symbol, pt_price FROM portfolio_transaction")
 
     result = cursor.fetchall()
 
     for dummy_price_row in result:
-        ticker = dummy_price_row["pi_symbol"]
-        pi_weighted_average_price = yf.Ticker(ticker).history(start='2025-04-07', end='2025-04-08')["Close"].iloc[0]
+        ticker = dummy_price_row["pt_symbol"]
+        pt_price = yf.Ticker(ticker).history(start='2025-04-07', end='2025-04-08')["Close"].iloc[0]
+        print("this is the pt_price for %s: %s", ticker, pt_price)
         
-    cursor.execute("UPDATE portfolio_item SET pi_weighted_average_price = %s WHERE pi_symbol = %s", (pi_weighted_average_price, ticker))
+    cursor.execute("UPDATE portfolio_transaction SET pt_price = %s WHERE pt_symbol = %s", (pt_price, ticker))
 
     conn.commit()
     cursor.close()

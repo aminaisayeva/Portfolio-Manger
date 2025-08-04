@@ -32,7 +32,7 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM portfolio_transaction ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
+    cursor.execute("SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
     result = cursor.fetchall()
 
     cursor.close()
@@ -43,15 +43,15 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     cost_basis = 0
 
     for row in result:
-        ticker = row["pt_symbol"]
-        volume = row["pt_quantity"]
-        buy_price = float(row["pt_price"]) #Switch to stock price April 7th
+        ticker = row["pi_symbol"]
+        volume = row["pi_total_quantity"]
+        weighted_buy_price = float(row["pi_weighted_average_price"]) #Switch to stock price April 7th
 
         # Get current stock price using yfinance
         stock = yf.Ticker(ticker)
         current_price = stock.fast_info['last_price'] #Switch to current price
         print(current_price)
-        change = calculate_change(current_price, buy_price)
+        change = calculate_change(current_price, weighted_buy_price)
 
         asset = {
             "symbol": ticker,
@@ -59,18 +59,18 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
             "price": round(current_price, 2),
             "change": round(change, 2),
             "volume": volume,
-            "buy_price": round(buy_price, 2)
+            "weighted_buy_price": round(weighted_buy_price, 2)
         }
 
         assets.append(asset)
         total_value += current_price * volume
-        cost_basis += buy_price * volume
+        cost_basis += weighted_buy_price * volume
 
     profit_loss = total_value - cost_basis
     monthly_growth = round((profit_loss / cost_basis) * 100 / 12, 2) if cost_basis > 0 else 0
 
     # pick bestToken based on highest absolute P/L
-    best_token = max(assets, key=lambda a: (calculate_change(a["price"], a["buy_price"])))
+    best_token = max(assets, key=lambda a: (calculate_change(a["price"], a["weighted_buy_price"])))
     # best_token.pl = calculate_change(best_token["price"], best_token["buy_price"])
 
     # build fake 12-month history linearly
