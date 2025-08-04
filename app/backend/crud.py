@@ -4,9 +4,9 @@ import json
 import yfinance as yf
 import pandas as pd
 from decimal import Decimal
-
+from math_operations import calculate_change
 from dotenv import load_dotenv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Flask, jsonify, request, render_template
 
 from math_operations import calculate_change
@@ -32,7 +32,7 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
+    cursor.execute("SELECT * FROM portfolio_transaction ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
     result = cursor.fetchall()
 
     cursor.close()
@@ -43,9 +43,9 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     cost_basis = 0
 
     for row in result:
-        ticker = row["pi_symbol"]
-        volume = row["pi_total_quantity"]
-        buy_price = float(row["pi_weighted_average_price"]) #Switch to stock price April 7th
+        ticker = row["pt_symbol"]
+        volume = row["pt_quantity"]
+        buy_price = float(row["pt_price"]) #Switch to stock price April 7th
 
         # Get current stock price using yfinance
         stock = yf.Ticker(ticker)
@@ -58,7 +58,8 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
             "name": ticker,  # or stock.info.get('shortName', ticker)
             "price": round(current_price, 2),
             "change": round(change, 2),
-            "volume": volume
+            "volume": volume,
+            "buy_price": round(buy_price, 2)
         }
 
         assets.append(asset)
@@ -69,14 +70,15 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     monthly_growth = round((profit_loss / cost_basis) * 100 / 12, 2) if cost_basis > 0 else 0
 
     # pick bestToken based on highest absolute P/L
-    best_token = max(assets, key=lambda a: (a["price"] - float(result[assets.index(a)]["pi_weighted_average_price"])) * a["volume"])
+    best_token = max(assets, key=lambda a: (calculate_change(a["price"], a["buy_price"])))
+    # best_token.pl = calculate_change(best_token["price"], best_token["buy_price"])
 
     # build fake 12-month history linearly
     history = []
-    for i in range(12):
-        date = (datetime.now().replace(day=1) - pd.DateOffset(months=11 - i)).strftime("%Y-%m-%d")
-        value = cost_basis + ((total_value - cost_basis) / 11) * i
-        history.append({"date": date, "value": round(value, 2)})
+    for i in range(90):
+        date = (datetime.now() - timedelta(days=89 - i)).strftime("%Y-%m-%d")
+        value = cost_basis + ((total_value - cost_basis) / 89) * i
+        history.append({"date": date, "value": round(value, 2)})    
 
     response = {
         "totalValue": round(total_value, 2),

@@ -24,5 +24,17 @@ def get_portfolio():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/market_movers')
+def get_market_movers():
+    try:
+        market_movers = {
+            yf.Ticker("^GSPC").info.get('longName', 'S&P 500'): yf.Ticker("^GSPC").info['regularMarketChangePercent'],
+            yf.Ticker("^DJI").info.get('longName', 'Dow Jones Industrial Average'): yf.Ticker("^DJI").info['regularMarketChangePercent'],
+            yf.Ticker("^IXIC").info.get('longName', 'NASDAQ Composite'): yf.Ticker("^IXIC").info['regularMarketChangePercent'],
+        }
+        return jsonify(market_movers), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)
