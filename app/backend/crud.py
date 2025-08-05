@@ -1,151 +1,111 @@
-import mysql.connector
+# src/api/portfolio.py  (or wherever your get_portfolio lives)
+
 import os
-import json
+import mysql.connector
 import yfinance as yf
-import pandas as pd
-from decimal import Decimal
+import json
+from datetime import datetime, date, timedelta
+from flask import jsonify
 from math_operations import calculate_change
 from dotenv import load_dotenv
-from datetime import datetime, date, timedelta
-from flask import Flask, jsonify, request, render_template
-
-from math_operations import calculate_change
-
-
-
 
 load_dotenv()
 
 def get_connection():
-    """Establish a connection to the MySQL database."""
-    
     return mysql.connector.connect(
         host='localhost',
         user='root',
         password=os.getenv('DB_PASSWORD'),
-        database = 'portfolio_manager',
+        database='portfolio_manager',
     )
 
 def get_portfolio(numEntries=3, orderBy='pi_id'):
-    """Fetch the portfolio items from the database."""
-    
-    conn = get_connection()
+    conn   = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
-    result = cursor.fetchall()
-
+    cursor.execute(
+      "SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s",
+      (orderBy, numEntries)
+    )
+    rows = cursor.fetchall()
     cursor.close()
     conn.close()
 
     assets = []
-    total_value = 0
-    cost_basis = 0
+    total_value = 0.0
+    cost_basis  = 0.0
 
-    for row in result:
-        ticker = row["pi_symbol"]
-        volume = row["pi_total_quantity"]
-        weighted_buy_price = float(row["pi_weighted_average_price"]) #Switch to stock price April 7th
+    # build up our assets list, total_value & cost_basis
+    for row in rows:
+        sym    = row["pi_symbol"]
+        vol    = float(row["pi_total_quantity"])
+        buy_px = float(row["pi_weighted_average_price"])
 
-        # Get current stock price using yfinance
-        stock = yf.Ticker(ticker)
-        current_price = stock.fast_info['last_price'] #Switch to current price
-        print(current_price)
-        change = calculate_change(current_price, weighted_buy_price)
+        ticker = yf.Ticker(sym)
+        cur_px = ticker.fast_info['last_price']
+        change_now = calculate_change(cur_px, buy_px)
 
-        asset = {
-            "symbol": ticker,
-            "name": ticker,  # or stock.info.get('shortName', ticker)
-            "price": round(current_price, 2),
-            "change": round(change, 2),
-            "volume": volume,
-            "weighted_buy_price": round(weighted_buy_price, 2)
-        }
+        assets.append({
+            "symbol": sym,
+            "name":   sym,
+            "price":  round(cur_px, 2),
+            "change": round(change_now, 2),
+            "volume": vol,
+            "weighted_buy_price": round(buy_px, 2),
+        })
 
-        assets.append(asset)
-        total_value += current_price * volume
-        cost_basis += weighted_buy_price * volume
+        total_value += cur_px * vol
+        cost_basis  += buy_px * vol
 
-    profit_loss = total_value - cost_basis
+    profit_loss    = total_value - cost_basis
     monthly_growth = round((profit_loss / cost_basis) * 100 / 12, 2) if cost_basis > 0 else 0
 
-    # pick bestToken based on highest absolute P/L
-    best_token = max(assets, key=lambda a: (calculate_change(a["price"], a["weighted_buy_price"])))
-    # best_token.pl = calculate_change(best_token["price"], best_token["buy_price"])
+    # helper to find the "best" asset over an N-day window
+    def best_over_period(days: int):
+        start_dt = (datetime.now() - timedelta(days=days)).date()
+        best = None
+        best_pct = None
 
-    # build fake 12-month history linearly
-    history = []
-    for i in range(90):
-        date = (datetime.now() - timedelta(days=89 - i)).strftime("%Y-%m-%d")
-        value = cost_basis + ((total_value - cost_basis) / 89) * i
-        history.append({"date": date, "value": round(value, 2)})    
+        for a in assets:
+            # fetch _that day's_ closing price
+            hist = yf.Ticker(a["symbol"]) \
+                    .history(start=start_dt, end=start_dt + timedelta(days=1), interval="1d")
+            if hist.empty:
+                continue
+            old_px = hist["Close"].iloc[0]
+            pct    = calculate_change(a["price"], old_px)
 
-    response = {
-        "totalValue": round(total_value, 2),
-        "profitLoss": round(profit_loss, 2),
-        "monthlyGrowth": monthly_growth,
-        "bestToken": best_token,
-        "history": history,
-        "assets": assets
+            if best_pct is None or pct > best_pct:
+                best_pct = pct
+                best = {
+                    **a,
+                    "period_days": days,
+                    "change": round(pct, 2),
+                    "old_price": round(old_px, 2),
+                }
+
+        return best
+
+    # compute best‐token for each window
+    best_tokens = {
+        "7d":  best_over_period(7),
+        "30d": best_over_period(30),
+        "90d": best_over_period(90),
     }
 
-    return response
+    # build a fake 90-day portfolio history for your chart
+    history = []
+    for i in range(90):
+        d = (datetime.now() - timedelta(days=89 - i)).strftime("%Y-%m-%d")
+        v = cost_basis + (profit_loss / 89) * i
+        history.append({"date": d, "value": round(v, 2)})
+    # ---- end fake history ----
 
-
-def add_purchased_stock(pi_stock, pi_volume) :
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute(
-        "INSERT INTO portfolio_item (pi_stockTicker, pi_volume, pi_buyPrice) VALUES (%s, %s, %s)",
-        (pi_stock.ticker, pi_volume, pi_stock.info.get("currentPrice"))
-    )
-
-    conn.commit()
-    cursor.execute(
-        "SELECT * FROM portfolio_item ORDER BY pi_id DESC LIMIT 5"
-    )
-    result = cursor.fetchone()
-    print(result)
-
-    cursor.close()
-    conn.close()
-
-    if result:
-        print("As JSON string: ", json.dumps(result))
-        return result
-    else:
-        return jsonify({"error": "No data found"}), 404
-
-def print_portfolio(numEntries=5):
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM portfolio_item ORDER BY pi_id DESC LIMIT %s", (numEntries,))
-    result = cursor.fetchall()
-    colunms = [desc[0] for desc in cursor.description]
-
-    result_dicts = [dict(zip(colunms, row)) for row in result] 
-
-    print("As JSON string: ", json.dumps(result_dicts, indent=4, cls=CustomJSONEncoder))
-
-    cursor.close()
-    conn.close()
-
-    
-
-
-## Functions for debugging
-
-# Use this encoder to handle Decimal and DateTime types in console printing
-# This is useful for printing JSON responses that include Decimal/DateTime values
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return float(obj)  # or str(obj) if precision matters
-        if isinstance(obj, (datetime, date)):
-            return obj.isoformat()  # Converts to "YYYY-MM-DDTHH:MM:SS"
-        return super().default(obj)
-
-
-
+    return {
+        "totalValue":   round(total_value, 2),
+        "profitLoss":   round(profit_loss, 2),
+        "monthlyGrowth": monthly_growth,
+        "bestTokens":   best_tokens,
+        "history":      history,
+        "assets":       assets,
+    }

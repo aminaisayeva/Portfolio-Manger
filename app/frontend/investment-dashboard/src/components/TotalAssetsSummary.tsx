@@ -11,12 +11,10 @@ type TotalAssetsProps = {
   onPeriodChange: (period: PeriodOption) => void;
 };
 
-export default function TotalAssetsSummary({
-  total, changePercent, changeAmount,
+export default function TotalAssetsSummary({ total, changePercent, changeAmount,
   periodOptions = ['Last 7 days','Last 30 days','Last 90 days'],
-  selectedPeriod, onPeriodChange,
-}: TotalAssetsProps) {
-  const isPos = changePercent>=0;
+  selectedPeriod, onPeriodChange, }: TotalAssetsProps) {
+  const isPos = changePercent >= 0;
   return (
     <div className="total-assets-card">
       <div className="left">
