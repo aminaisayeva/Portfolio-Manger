@@ -39,11 +39,16 @@ export async function fetchPortfolio(): Promise<Portfolio> {
 // }
 
 export async function executeTrade(
-  symbol: string,
-  amount: number,
-  type: 'buy' | 'sell'
-) {
-  // For now, just log and return success
-  console.log(`Mock trade ${type} ${amount} of ${symbol}`);
-  return { success: true };
+  symbol: string, 
+  amount: number, 
+  type: 'buy' | 'sell') {
+  const response = await fetch('http://localhost:5000/api/trade', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ symbol, amount, type }),
+  })
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(error.message || 'Trade failed')
+  }
 }

@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from initialize_portfolio import initialize_portfolio
-from crud import get_portfolio as get_portfolio_items
+from crud import get_portfolio as get_portfolio_items, handle_trade
 
 import requests_cache
 import yfinance as yf
@@ -35,6 +35,37 @@ def get_market_movers():
         return jsonify(market_movers), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@app.route('/api/trade', methods=['POST'])
+def trade():
+    try:
+        data = request.get_json()
+        print("Incoming JSON:", data)
+        if not data:
+            return jsonify({'message': 'Invalid JSON or missing content-type header'}), 400
+
+        print(data.get('symbol'), data.get('amount'), data.get('type'))
+
+        symbol = data.get('symbol')
+        amount = data.get('amount')
+        trade_type = data.get('type')
+
+        print("Symbol:", symbol, "Amount:", amount, "Trade Type:", trade_type)
+
+        if not symbol or not amount or not trade_type:
+            return jsonify({'message': 'Missing symbol, amount, or type in request'}), 400
+
+        # Ensure amount is an integer
+        amount = int(amount)
+
+        print("Amount after conversion:", amount)
+
+        # Handle the trade logic in a separate function
+        handle_trade(symbol, amount, trade_type)
+        return jsonify({'message': 'Trade executed successfully'}), 200
+
+    except Exception as e:
+        return jsonify({'message': str(e)}), 430
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000, debug=True)

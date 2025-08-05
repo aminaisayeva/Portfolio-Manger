@@ -91,31 +91,94 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
 
     return response
 
+def handle_trade(symbol, amount, trade_type, date=None):
+    print("In handle_trade function")
+    trade_actions = {
+        'buy': buy_stock,
+        'sell': sell_stock
+    }
+    action = trade_actions.get(trade_type.lower())
 
-def add_purchased_stock(pi_stock, pi_volume) :
+    return action(symbol, amount, date)
+
+def buy_stock(symbol, amount, date=None ):
+    print("In buy_stock function")
+    if date is None:
+        date = datetime.now()
+    print("Date for buying stock:", date)
+    """Buy a stock and add it to the portfolio."""
+    buy_date = date.strftime("%Y-%m-%d")
+    print("Formatted buy date:", buy_date)
+    ticker = yf.Ticker(symbol)
+    print("Ticker object for symbol:", ticker)
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute(
-        "INSERT INTO portfolio_item (pi_stockTicker, pi_volume, pi_buyPrice) VALUES (%s, %s, %s)",
-        (pi_stock.ticker, pi_volume, pi_stock.info.get("currentPrice"))
-    )
+    # Fetch the current price of the stock
+    try:
+        current_price = round (ticker.history(start=buy_date, end=(date+timedelta(days=1)).strftime("%Y-%m-%d"))["Close"].iloc[0], 2)
+        print("Current price for", symbol, "on", buy_date, ":", current_price)
+    except IndexError:
+        raise ValueError(f"Stock data for {symbol} not available on {buy_date}. Please check the symbol or date.")  
 
+    print("Current price after fetching:", current_price)
+    # Insert the new stock into the portfolio_item table
+    cursor.execute(
+        "INSERT INTO portfolio_transaction (pt_symbol, pt_quantity, pt_price, pt_type, pt_date, pt_ca_id) VALUES (%s, %s, %s, %s, %s, %s)",
+        (symbol, amount, current_price, 'BUY', buy_date, 1)  # Assuming pt_type is 'buy' and pt_ca_id is 1 for now
+    )
+    print("Inserted into portfolio_transaction:", symbol, amount, current_price)
     conn.commit()
-    cursor.execute(
-        "SELECT * FROM portfolio_item ORDER BY pi_id DESC LIMIT 5"
-    )
-    result = cursor.fetchone()
-    print(result)
-
     cursor.close()
     conn.close()
 
-    if result:
-        print("As JSON string: ", json.dumps(result))
-        return result
-    else:
-        return jsonify({"error": "No data found"}), 404
+    print(f"Bought {amount} shares of {symbol} at ${current_price} on {buy_date}")
+
+def sell_stock(symbol, amount, date=None):
+    """Sell a stock and record it in the portfolio."""
+    if date is None:
+        date = datetime.now()
+
+    buy_date = date.strftime("%Y-%m-%d")
+    end_date = (date + timedelta(days=1)).strftime("%Y-%m-%d")
+
+    ticker = yf.Ticker(symbol)
+
+    try:
+        history = ticker.history(start=buy_date, end=end_date)
+        sell_price = round(history["Close"].iloc[0], 2)
+    except IndexError:
+        raise ValueError(f"Stock data for {symbol} not available on {buy_date}.")
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Optional: Check current holdings before allowing the sale
+    cursor.execute(
+        "SELECT SUM(pi_total_quantity) AS total_owned FROM portfolio_transaction WHERE pi_symbol = %s",
+        (symbol,)
+    )
+    result = cursor.fetchone()
+    total_owned = result["total_owned"] or 0
+
+    if amount > total_owned:
+        raise ValueError(f"Cannot sell {amount} shares of {symbol}. You only own {total_owned}.")
+
+    # Record the sale as a negative quantity
+    cursor.execute(
+        """
+        INSERT INTO portfolio_transaction 
+        (pi_symbol, pi_total_quantity, pi_weighted_average_price)
+        VALUES (%s, %s, %s)
+        """,
+        (symbol, -amount, sell_price)  # Negative quantity to denote sale
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    print(f"Sold {amount} shares of {symbol} at ${sell_price} on {buy_date}")
 
 def print_portfolio(numEntries=5):
     conn = get_connection()
