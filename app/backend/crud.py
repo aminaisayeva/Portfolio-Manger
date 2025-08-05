@@ -4,9 +4,9 @@ import json
 import yfinance as yf
 import pandas as pd
 from decimal import Decimal
-
+from math_operations import calculate_change
 from dotenv import load_dotenv
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from flask import Flask, jsonify, request, render_template
 
 from math_operations import calculate_change
@@ -45,38 +45,40 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
     for row in result:
         ticker = row["pi_symbol"]
         volume = row["pi_total_quantity"]
-        buy_price = float(row["pi_weighted_average_price"]) #Switch to stock price April 7th
+        weighted_buy_price = float(row["pi_weighted_average_price"]) #Switch to stock price April 7th
 
         # Get current stock price using yfinance
         stock = yf.Ticker(ticker)
         current_price = stock.fast_info['last_price'] #Switch to current price
         print(current_price)
-        change = calculate_change(current_price, buy_price)
+        change = calculate_change(current_price, weighted_buy_price)
 
         asset = {
             "symbol": ticker,
             "name": ticker,  # or stock.info.get('shortName', ticker)
             "price": round(current_price, 2),
             "change": round(change, 2),
-            "volume": volume
+            "volume": volume,
+            "weighted_buy_price": round(weighted_buy_price, 2)
         }
 
         assets.append(asset)
         total_value += current_price * volume
-        cost_basis += buy_price * volume
+        cost_basis += weighted_buy_price * volume
 
     profit_loss = total_value - cost_basis
     monthly_growth = round((profit_loss / cost_basis) * 100 / 12, 2) if cost_basis > 0 else 0
 
     # pick bestToken based on highest absolute P/L
-    best_token = max(assets, key=lambda a: (a["price"] - float(result[assets.index(a)]["pi_weighted_average_price"])) * a["volume"])
+    best_token = max(assets, key=lambda a: (calculate_change(a["price"], a["weighted_buy_price"])))
+    # best_token.pl = calculate_change(best_token["price"], best_token["buy_price"])
 
     # build fake 12-month history linearly
     history = []
-    for i in range(12):
-        date = (datetime.now().replace(day=1) - pd.DateOffset(months=11 - i)).strftime("%Y-%m-%d")
-        value = cost_basis + ((total_value - cost_basis) / 11) * i
-        history.append({"date": date, "value": round(value, 2)})
+    for i in range(90):
+        date = (datetime.now() - timedelta(days=89 - i)).strftime("%Y-%m-%d")
+        value = cost_basis + ((total_value - cost_basis) / 89) * i
+        history.append({"date": date, "value": round(value, 2)})    
 
     response = {
         "totalValue": round(total_value, 2),

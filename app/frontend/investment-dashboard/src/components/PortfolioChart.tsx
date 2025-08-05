@@ -1,6 +1,5 @@
 // src/components/PortfolioChart.tsx
-
-import React from 'react'
+import React from 'react';
 import {
   AreaChart,
   Area,
@@ -11,27 +10,37 @@ import {
   ResponsiveContainer,
   ReferenceDot,
   Label
-} from 'recharts'
-import { Portfolio } from '../types'
-import { parseISO, format } from 'date-fns'
+} from 'recharts';
+import { parseISO, format } from 'date-fns';
 
-function formatMonthYear(dateStr: string) {
-  // e.g. "Jul 2025"
-  return format(parseISO(dateStr), 'MMM yyyy')
-}
+type ChartPoint = { date: string; value: number };
+
+type PortfolioChartProps = {
+  history: ChartPoint[];
+  periodDays?: number;
+};
 
 export default function PortfolioChart({
   history,
-}: { history: Portfolio['history'] }) {
-  // find max point
-  const maxPt = history.reduce((m, pt) => (pt.value > m.value ? pt : m), history[0])
+  periodDays = 90,
+}: PortfolioChartProps) {
+  const maxPt = history.reduce((m, pt) => (pt.value > m.value ? pt : m), history[0]);
+
+  const formatTick = (dateStr: string) => {
+    const dt = parseISO(dateStr);
+    return periodDays <= 30 ? format(dt, 'MMM d') : format(dt, 'MMM yyyy');
+  };
+
+  const formatLabel = (dateStr: string) => {
+    const dt = parseISO(dateStr);
+    return periodDays <= 30
+      ? format(dt, 'MMM d, yyyy')
+      : format(dt, 'MMM yyyy');
+  };
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <AreaChart
-        data={history}
-        margin={{ top: 40, right: 20, left: 0, bottom: 0 }}
-      >
+      <AreaChart data={history} margin={{ top: 40, right: 20, left: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
             <stop offset="5%" stopColor="#4caf50" stopOpacity={0.4} />
@@ -41,7 +50,7 @@ export default function PortfolioChart({
 
         <XAxis
           dataKey="date"
-          tickFormatter={formatMonthYear}
+          tickFormatter={formatTick}
           axisLine={false}
           tickLine={false}
           tick={{ fill: '#666', fontSize: 12 }}
@@ -56,19 +65,9 @@ export default function PortfolioChart({
 
         <CartesianGrid stroke="#eee" strokeDasharray="3 3" vertical={false} />
 
-        <Tooltip
-          formatter={(v: number) => `$${v.toLocaleString()}`}
-          labelFormatter={formatMonthYear}
-        />
+        <Tooltip formatter={(v: number) => `$${v.toLocaleString()}`} labelFormatter={formatLabel} />
 
-        <Area
-          type="monotone"
-          dataKey="value"
-          stroke="#4caf50"
-          strokeWidth={2}
-          fill="url(#colorValue)"
-          dot={false}
-        />
+        <Area type="monotone" dataKey="value" stroke="#4caf50" strokeWidth={2} fill="url(#colorValue)" dot={false} />
 
         <ReferenceDot
           x={maxPt.date}
@@ -81,16 +80,16 @@ export default function PortfolioChart({
         >
           <Label
             content={(props: any) => {
-              const x = Number(props.x)
-              const y = Number(props.y)
-              if (isNaN(x) || isNaN(y)) return null
+              const x = Number(props.x);
+              const y = Number(props.y);
+              if (isNaN(x) || isNaN(y)) return null;
 
-              const text = maxPt.value.toFixed(2)
-              const padding = 6
-              const textWidth = text.length * 7
-              const boxWidth = textWidth + padding * 2
-              const boxHeight = 20
-              const extraLift = 16
+              const text = maxPt.value.toFixed(2);
+              const padding = 6;
+              const textWidth = text.length * 7;
+              const boxWidth = textWidth + padding * 2;
+              const boxHeight = 20;
+              const extraLift = 16;
 
               return (
                 <g>
@@ -113,11 +112,11 @@ export default function PortfolioChart({
                     {text}
                   </text>
                 </g>
-              )
+              );
             }}
           />
         </ReferenceDot>
       </AreaChart>
     </ResponsiveContainer>
-  )
+  );
 }
