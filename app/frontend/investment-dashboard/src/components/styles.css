@@ -346,6 +346,9 @@ button.active {
 /* Profit/Loss Summary (horizontal 3‑column layout) */
 .profit-summary {
   display: grid;
+  /* ensure the grid actually fills its parent */
+  width: 100%;
+  box-sizing: border-box;
   grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
   background: #fff;

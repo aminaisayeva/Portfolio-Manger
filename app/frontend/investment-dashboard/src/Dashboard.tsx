@@ -42,7 +42,7 @@ export default function Dashboard({ portfolios }: DashboardProps) {
           <PortfolioChart history={portfolio.history} />
         </div>
 
-        <div className="profit-summary">
+        <div >
           <ProfitLossSummary data={portfolio} />
         </div>
 
