@@ -28,8 +28,9 @@ CREATE TABLE IF NOT EXISTS cash_transaction (
 -- Table: Portfolio Items (auto-calculated holdings)
 CREATE TABLE IF NOT EXISTS portfolio_item (
     pi_symbol VARCHAR(10) PRIMARY KEY,
-    pi_name VARCHAR(50),
+    pi_name VARCHAR(50) NOT NULL,
     pi_sector VARCHAR(50),
+    pi_industry VARCHAR(50),
     pi_total_quantity FLOAT NOT NULL,
     pi_weighted_average_price FLOAT NOT NULL
 );
@@ -40,6 +41,7 @@ CREATE TABLE IF NOT EXISTS portfolio_transaction (
     pt_symbol VARCHAR(10) NOT NULL,
     pt_name VARCHAR(50) NOT NULL,
     pt_sector VARCHAR(50),
+    pt_industry VARCHAR(50),
     pt_quantity FLOAT NOT NULL,
     pt_price FLOAT NOT NULL,
     pt_type ENUM('BUY', 'SELL') NOT NULL,
