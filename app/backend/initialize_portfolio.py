@@ -11,7 +11,6 @@ def initialize_portfolio():
     for dummy_price_row in result:
         ticker = dummy_price_row["pt_symbol"]
         pt_price = yf.Ticker(ticker).history(start='2025-04-07', end='2025-04-08')["Close"].iloc[0]
-        print("this is the pt_price for %s: %s", ticker, pt_price)
         
     cursor.execute("UPDATE portfolio_transaction SET pt_price = %s WHERE pt_symbol = %s", (pt_price, ticker))
 

@@ -23,12 +23,10 @@ INSERT INTO portfolio_transaction (pt_symbol, pt_quantity, pt_price, pt_type, pt
 -- June buys
 ('AAPL', 20, 150.00, 'BUY', '2025-06-02', 1),
 ('MSFT', 10, 320.00, 'BUY', '2025-06-03', 1),
-('TSLA', 5,  700.00, 'BUY', '2025-06-05', 2),
 ('AMZN', 8,  120.00, 'BUY', '2025-06-07', 1),
 
 -- More buys later in June
 ('AAPL', 10, 155.00, 'BUY', '2025-06-15', 1),
-('TSLA', 3,  710.00, 'BUY', '2025-06-18', 2),
 
 -- Early July buys
 ('MSFT', 5,  330.00, 'BUY', '2025-07-02', 1),
@@ -36,7 +34,6 @@ INSERT INTO portfolio_transaction (pt_symbol, pt_quantity, pt_price, pt_type, pt
 
 -- Mid-July sells
 ('AAPL', 5,  160.00, 'SELL', '2025-07-10', 1),
-('TSLA', 2,  725.00, 'SELL', '2025-07-12', 2),
 
 -- Late July buys & sells
 ('AAPL', 5,  158.00, 'BUY', '2025-07-18', 1),

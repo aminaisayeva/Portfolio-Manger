@@ -26,13 +26,17 @@ def get_connection():
         database = 'portfolio_manager',
     )
 
-def get_portfolio(numEntries=3, orderBy='pi_id'):
+def get_portfolio(orderBy, numEntries=None):
     """Fetch the portfolio items from the database."""
-    
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s", (orderBy, numEntries,))
+    if numEntries is None:
+        # Count total number of rows in the table
+        cursor.execute("SELECT COUNT(*) as total FROM portfolio_item")
+        numEntries = cursor.fetchone()['total']
+
+    cursor.execute("SELECT * FROM portfolio_item ORDER BY %s DESC LIMIT %s", (orderBy, numEntries))
     result = cursor.fetchall()
 
     cursor.close()
@@ -91,94 +95,50 @@ def get_portfolio(numEntries=3, orderBy='pi_id'):
 
     return response
 
-def handle_trade(symbol, amount, trade_type, date=None):
-    print("In handle_trade function")
-    trade_actions = {
-        'buy': buy_stock,
-        'sell': sell_stock
-    }
-    action = trade_actions.get(trade_type.lower())
 
-    return action(symbol, amount, date)
-
-def buy_stock(symbol, amount, date=None ):
-    print("In buy_stock function")
+def handle_trade(symbol, amount, trade_type, date=None ):
+    """Handle buying or selling a stock."""   
     if date is None:
         date = datetime.now()
-    print("Date for buying stock:", date)
-    """Buy a stock and add it to the portfolio."""
-    buy_date = date.strftime("%Y-%m-%d")
-    print("Formatted buy date:", buy_date)
+     
+    transaction_date = date.strftime("%Y-%m-%d")
+       
     ticker = yf.Ticker(symbol)
-    print("Ticker object for symbol:", ticker)
+      
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
+    if trade_type == 'SELL':
+        # Check if enough shares are owned before selling
+        cursor.execute(
+            "SELECT pi_total_quantity FROM portfolio_item WHERE pi_symbol = %s",
+            (symbol,)
+        )
+        result = cursor.fetchone()
+        total_owned = result["pi_total_quantity"] or 0
+
+        if amount > total_owned:
+            raise ValueError(f"Cannot sell {amount} shares of {symbol}. You only own {total_owned}.")
+
+        
     # Fetch the current price of the stock
     try:
-        current_price = round (ticker.history(start=buy_date, end=(date+timedelta(days=1)).strftime("%Y-%m-%d"))["Close"].iloc[0], 2)
-        print("Current price for", symbol, "on", buy_date, ":", current_price)
+        current_price = round (ticker.history(start=transaction_date, end=(date+timedelta(days=1)).strftime("%Y-%m-%d"))["Close"].iloc[0], 2)
     except IndexError:
-        raise ValueError(f"Stock data for {symbol} not available on {buy_date}. Please check the symbol or date.")  
+        raise ValueError(f"Stock data for {symbol} not available on {transaction_date}. Please check the symbol or date.")  
 
-    print("Current price after fetching:", current_price)
     # Insert the new stock into the portfolio_item table
     cursor.execute(
         "INSERT INTO portfolio_transaction (pt_symbol, pt_quantity, pt_price, pt_type, pt_date, pt_ca_id) VALUES (%s, %s, %s, %s, %s, %s)",
-        (symbol, amount, current_price, 'BUY', buy_date, 1)  # Assuming pt_type is 'buy' and pt_ca_id is 1 for now
+        (symbol, amount, current_price, trade_type, transaction_date, 1)  # Assuming pt_type is 'buy' and pt_ca_id is 1 for now
     )
-    print("Inserted into portfolio_transaction:", symbol, amount, current_price)
+    
     conn.commit()
     cursor.close()
     conn.close()
 
-    print(f"Bought {amount} shares of {symbol} at ${current_price} on {buy_date}")
+    print(f"Bought/sold {amount} shares of {symbol} at ${current_price} on {transaction_date}")
 
-def sell_stock(symbol, amount, date=None):
-    """Sell a stock and record it in the portfolio."""
-    if date is None:
-        date = datetime.now()
-
-    buy_date = date.strftime("%Y-%m-%d")
-    end_date = (date + timedelta(days=1)).strftime("%Y-%m-%d")
-
-    ticker = yf.Ticker(symbol)
-
-    try:
-        history = ticker.history(start=buy_date, end=end_date)
-        sell_price = round(history["Close"].iloc[0], 2)
-    except IndexError:
-        raise ValueError(f"Stock data for {symbol} not available on {buy_date}.")
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    # Optional: Check current holdings before allowing the sale
-    cursor.execute(
-        "SELECT SUM(pi_total_quantity) AS total_owned FROM portfolio_transaction WHERE pi_symbol = %s",
-        (symbol,)
-    )
-    result = cursor.fetchone()
-    total_owned = result["total_owned"] or 0
-
-    if amount > total_owned:
-        raise ValueError(f"Cannot sell {amount} shares of {symbol}. You only own {total_owned}.")
-
-    # Record the sale as a negative quantity
-    cursor.execute(
-        """
-        INSERT INTO portfolio_transaction 
-        (pi_symbol, pi_total_quantity, pi_weighted_average_price)
-        VALUES (%s, %s, %s)
-        """,
-        (symbol, -amount, sell_price)  # Negative quantity to denote sale
-    )
-
-    conn.commit()
-    cursor.close()
-    conn.close()
-
-    print(f"Sold {amount} shares of {symbol} at ${sell_price} on {buy_date}")
 
 def print_portfolio(numEntries=5):
     conn = get_connection()
@@ -196,19 +156,4 @@ def print_portfolio(numEntries=5):
     conn.close()
 
     
-
-
-## Functions for debugging
-
-# Use this encoder to handle Decimal and DateTime types in console printing
-# This is useful for printing JSON responses that include Decimal/DateTime values
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, Decimal):
-            return float(obj)  # or str(obj) if precision matters
-        if isinstance(obj, (datetime, date)):
-            return obj.isoformat()  # Converts to "YYYY-MM-DDTHH:MM:SS"
-        return super().default(obj)
-
-
 
