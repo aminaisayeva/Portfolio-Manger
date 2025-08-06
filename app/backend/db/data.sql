@@ -16,20 +16,20 @@ INSERT INTO cash_transaction (ct_ca_id, ct_type, ct_amount, ct_date, ct_note) VA
 -- ============================
 INSERT INTO portfolio_transaction (pt_symbol, pt_name, pt_sector, pt_industry, pt_quantity, pt_price, pt_type, pt_date) VALUES
 -- Gainer buys
-('NVDA', 'NVIDIA Corp', 'Technology', 'Semiconductors', 18, 97.64, 'BUY', '2025-04-07'),
-('META', 'Meta Platforms Inc', 'Communication Services', 'Internet Content & Information', 3, 504.73, 'BUY', '2025-04-07'),
+('NVDA', 'NVIDIA Corporation', 'Technology', 'Semiconductors', 18, 97.64, 'BUY', '2025-04-07'),
+('META', 'Meta Platforms, Inc.', 'Communication Services', 'Internet Content & Information', 3, 504.73, 'BUY', '2025-04-07'),
 ('MSFT', 'Microsoft Corporation', 'Technology', 'Software - Infrastructure', 5,  357.86, 'BUY', '2025-04-07'),
-('GOOGL', 'Alphabet Inc', '', '', 12,  146.75, 'BUY', '2025-04-07'),
-('AMZN', 'Amazon.com Inc', '', '', 10,  175.26, 'BUY', '2025-04-07'),
-('PLTR', 'Palantir Technologies', '', '', 22,  77.84, 'BUY', '2025-04-07'),
-('GEV', 'GE Vernova', '', '', 6,  286.07, 'BUY', '2025-04-07'),
-('SMCI', 'Super Micro Computer', '', '', 53,  33.00, 'BUY', '2025-04-07'),
+('GOOGL', 'Alphabet Inc.', 'Communication Services', 'Internet Content & Information', 12,  146.75, 'BUY', '2025-04-07'),
+('AMZN', 'Amazon.com, Inc.', 'Consumer Cyclical', 'Internet Retail', 10,  175.26, 'BUY', '2025-04-07'),
+('PLTR', 'Palantir Technologies Inc.', 'Technology', 'Software - Infrastructure', 22,  77.84, 'BUY', '2025-04-07'),
+('GEV', 'GE Vernova Inc.', 'Industrials', 'Specialty Industrial Machinery', 6,  286.07, 'BUY', '2025-04-07'),
+('SMCI', 'Super Micro Computer, Inc.', 'Technology', 'Computer Hardware', 53,  33.00, 'BUY', '2025-04-07'),
 
 -- Loser buys
-('TGTX', 'TG Therapetics, Inc.', '', '', 47, 37.25, 'BUY', '2025-04-07'),
-('UNH', 'UnitedHealth Group Incorporated', '', '', 3, 524.70, 'BUY', '2025-04-07'),
-('KRYS', 'Krystal Biotech, Inc.', '', '', 11,  166.01, 'BUY', '2025-04-07'),
-('BRKR', 'Bruker Corporation', '', '', 45,  38.70, 'BUY', '2025-04-07');
+('TGTX', 'TG Therapetics, Inc.', 'Healthcare', 'Biotechnology', 47, 37.25, 'BUY', '2025-04-07'),
+('UNH', 'UnitedHealth Group Incorporated', 'Healthcare', 'Healthcare Plans', 3, 524.70, 'BUY', '2025-04-07'),
+('KRYS', 'Krystal Biotech, Inc.', 'Healthcare', 'Biotechnology', 11,  166.01, 'BUY', '2025-04-07'),
+('BRKR', 'Bruker Corporation', 'Healthcare', 'Medical Devices', 45,  38.70, 'BUY', '2025-04-07');
 
 
 -- ============================
