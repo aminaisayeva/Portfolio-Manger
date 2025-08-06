@@ -30,19 +30,24 @@ CREATE PROCEDURE recalculate_portfolio_items()
 BEGIN
     DELETE FROM portfolio_item;
 
-    INSERT INTO portfolio_item (pi_symbol, pi_name, pi_sector, pi_total_quantity, pi_weighted_average_price)
+    INSERT INTO portfolio_item (
+        pi_symbol, pi_name, pi_sector, pi_industry,
+        pi_total_quantity, pi_weighted_average_price
+    )
     SELECT 
         pt_symbol,
         pt_name,
         pt_sector,
+        pt_industry,
         SUM(CASE WHEN pt_type='BUY' THEN pt_quantity ELSE -pt_quantity END) AS total_qty,
         (
             SUM(CASE WHEN pt_type='BUY' THEN pt_quantity * pt_price ELSE 0 END) /
             NULLIF(SUM(CASE WHEN pt_type='BUY' THEN pt_quantity ELSE 0 END), 0)
         ) AS weighted_avg_price
     FROM portfolio_transaction
-    GROUP BY pt_symbol, pt_name, pt_sector
+    GROUP BY pt_symbol, pt_name, pt_sector, pt_industry
     HAVING total_qty > 0;
 END $$
 
 DELIMITER ;
+
