@@ -55,10 +55,10 @@ This application uses a modern full-stack architecture with three main component
 sudo service mysql start
 
 # Create database and tables
-mysql -u root -p < backend/schema.sql
+mysql -u root -p 
 
-# Insert sample portfolio data
-mysql -u root -p < backend/sample_data.sql
+source C:/.../master.sql
+
 ```
 
 ### 2. Setup Flask Backend
@@ -68,7 +68,7 @@ cd backend
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Configure environment
+# Configure environment (make the file yourself if needed)
 cp .env
 # Edit .env and add: DB_PASSWORD= _mysql_password
 
@@ -131,6 +131,7 @@ npm run dev
 ### API Endpoints
 - `GET /api/portfolio` - Returns complete portfolio data
 - `POST /api/trade` - Processes buy/sell transactions
+- `POST /api/add-funds` - Adds funds to the cash balance
 - `GET /api/market` - Market data and trending stocks
 - `POST /api/ai/chat` - AI advisor interactions
 
