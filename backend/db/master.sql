@@ -1,5 +1,5 @@
-SOURCE ./schema.sql 
-SOURCE ./procedures.sql
-SOURCE ./triggers.sql 
-SOURCE ./scheduler.sql 
-SOURCE ./data.sql 
+source ./schema.sql
+source ./procedures.sql
+source ./triggers.sql
+source ./scheduler.sql
+source ./data.sql 

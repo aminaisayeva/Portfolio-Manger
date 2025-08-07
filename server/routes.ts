@@ -21,7 +21,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // First try to fetch from   Flask backend  
       try {
-        const response = await fetch('http://localhost:8080/api/portfolio');
+        const response = await fetch('http://localhost:8000/api/portfolio');
         if (response.ok) {
           const portfolioData = await response.json();
           return res.json(portfolioData);
@@ -90,24 +90,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Execute trade - integrates with   Flask backend handle_trade function  
   app.post("/api/trade", async (req, res) => {
     try {
-      const { symbol, quantity, type, price } = req.body;
+      const { symbol, amount, trade_type, price } = req.body;
       
       // Validate required fields
-      if (!symbol || !quantity || !type) {
-        return res.status(400).json({ error: 'Missing required fields: symbol, quantity, type' });
+      if (!symbol || !amount || !trade_type) {
+        return res.status(400).json({ error: 'Missing required fields: symbol, amount, trade_type' });
       }
 
       // First try to send trade to   Flask backend
       try {
-        const response = await fetch('http://localhost:8080/api/trade', {
+        const response = await fetch('http://localhost:8000/api/trade', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
             symbol: symbol.toUpperCase(),
-            amount: parseFloat(quantity),
-            trade_type: type.toUpperCase(), // BUY or SELL
+            amount: parseFloat(amount),
+            trade_type: trade_type.toUpperCase(), // BUY or SELL
             date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
           })
         });
@@ -116,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const result = await response.json();
           return res.json({ 
             success: true, 
-            message: `Successfully ${type.toLowerCase()}ed ${quantity} shares of ${symbol}`,
+            message: `Successfully ${trade_type.toLowerCase()}ed ${amount} shares of ${symbol}`,
             data: result
           });
         } else {
@@ -130,8 +130,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Fallback to original trade logic if Flask backend not available
       const trade = tradeSchema.parse({ 
         symbol, 
-        shares: parseInt(quantity), 
-        type: type === 'sell' ? 'sell' : 'buy',
+        shares: parseInt(amount), 
+        type: trade_type === 'sell' ? 'sell' : 'buy',
         companyName: symbol // Will be filled from stock data
       });
       const userId = DEFAULT_USER_ID;
@@ -233,7 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // First try to send add-funds request to   Flask backend
       try {
-        const response = await fetch('http://localhost:8080/api/add-funds', {
+        const response = await fetch('http://localhost:8000/api/add-funds', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

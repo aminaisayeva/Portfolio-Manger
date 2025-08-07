@@ -107,6 +107,31 @@ def sell_stock():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/trade', methods=['POST'])
+def trade():
+    """Unified API endpoint for buying and selling stocks."""
+    try:
+        data = request.get_json()
+        symbol = data.get('symbol', '').upper()
+        amount = int(data.get('amount', 0))
+        trade_type = data.get('trade_type', '').upper()
+        
+        if not symbol or amount <= 0 or trade_type not in ['BUY', 'SELL']:
+            return jsonify({"error": "Invalid parameters. Required: symbol, amount, trade_type (BUY/SELL)"}), 400
+        
+        # Use the handle_trade function from crud.py
+        handle_trade(symbol, amount, trade_type)
+        
+        return jsonify({
+            "message": f"Successfully {trade_type.lower()}ed {amount} shares of {symbol}",
+            "symbol": symbol,
+            "quantity": amount,
+            "type": trade_type
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     print("Portfolio system initialized")
-    app.run(host='0.0.0.0', port=8080, debug=True, use_reloader=False)
+    app.run(host='0.0.0.0', port=8000, debug=True, use_reloader=False)

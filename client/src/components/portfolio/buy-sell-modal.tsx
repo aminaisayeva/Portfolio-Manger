@@ -139,9 +139,8 @@ export function BuySellModal({
 
     tradeMutation.mutate({
       symbol: formData.symbol.toUpperCase(),
-      companyName: formData.companyName,
-      shares,
-      type: formData.type
+      amount: shares,
+      trade_type: formData.type.toUpperCase()
     });
   };
 

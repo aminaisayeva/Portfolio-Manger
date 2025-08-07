@@ -66,7 +66,9 @@ export default function Dashboard() {
     totalGainPercent: (portfolioData as any)?.summary?.totalGainPercent || (portfolioData as any)?.monthlyGrowth || 0,
     dayGain: (portfolioData as any)?.summary?.dayGain || 0,
     dayGainPercent: (portfolioData as any)?.summary?.dayGainPercent || 0,
-    cashBalance: (portfolioData as any)?.summary?.cashBalance || (portfolioData as any)?.cashBalance || 0
+    cashBalance: (portfolioData as any)?.summary?.cashBalance || (portfolioData as any)?.cashBalance || 0,
+    realizedGains: (portfolioData as any)?.realizedGains || 0,
+    unrealizedGains: (portfolioData as any)?.profitLoss || 0
   };
   const holdings = (portfolioData as any)?.positions || (portfolioData as any)?.assets || [];
   const bestToken = (portfolioData as any)?.bestToken;
@@ -94,7 +96,7 @@ export default function Dashboard() {
           </div>
 
           {/* Portfolio Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
             <Card className="bg-card rounded-xl card-glow-blue border border-border">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
@@ -163,6 +165,50 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">Cash Balance</p>
                     <p className="text-2xl font-bold text-foreground">
                       ${portfolioSummary.cashBalance ? portfolioSummary.cashBalance.toLocaleString() : "0.00"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Realized Gains Card */}
+            <Card className="bg-card rounded-xl card-glow-emerald border border-border">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${(portfolioSummary.realizedGains || 0) >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
+                    {(portfolioSummary.realizedGains || 0) >= 0 ? (
+                      <TrendingUp className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <TrendingDown className="w-5 h-5 text-red-400" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Realized Gains</p>
+                    <p className={`text-2xl font-bold ${(portfolioSummary.realizedGains || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                      ${(portfolioSummary.realizedGains || 0) >= 0 ? '+' : ''}
+                      {portfolioSummary.realizedGains ? portfolioSummary.realizedGains.toFixed(2) : "0.00"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Unrealized Gains Card */}
+            <Card className="bg-card rounded-xl card-glow-cyan border border-border">
+              <CardContent className="p-6">
+                <div className="flex items-center space-x-3">
+                  <div className={`p-2 rounded-lg ${(portfolioSummary.unrealizedGains || 0) >= 0 ? 'bg-cyan-500/20' : 'bg-red-500/20'}`}>
+                    {(portfolioSummary.unrealizedGains || 0) >= 0 ? (
+                      <TrendingUp className="w-5 h-5 text-cyan-400" />
+                    ) : (
+                      <TrendingDown className="w-5 h-5 text-red-400" />
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Unrealized Gains</p>
+                    <p className={`text-2xl font-bold ${(portfolioSummary.unrealizedGains || 0) >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
+                      ${(portfolioSummary.unrealizedGains || 0) >= 0 ? '+' : ''}
+                      {portfolioSummary.unrealizedGains ? portfolioSummary.unrealizedGains.toFixed(2) : "0.00"}
                     </p>
                   </div>
                 </div>

@@ -9,48 +9,39 @@ import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 import { TrendingUp, TrendingDown, Target, PieChart as PieChartIcon, BarChart3, Activity, AlertTriangle, Star, Calendar, DollarSign } from "lucide-react";
 
-// Mock analytics data
-const sectorAllocation = [
-  { name: 'Technology', value: 45, amount: 112125, color: '#8b5cf6' },
-  { name: 'Healthcare', value: 20, amount: 49771, color: '#06b6d4' },
-  { name: 'Finance', value: 15, amount: 37328, color: '#10b981' },
-  { name: 'Consumer', value: 12, amount: 29862, color: '#f59e0b' },
-  { name: 'Energy', value: 8, amount: 19906, color: '#ef4444' }
-];
+// Custom styles for enhanced chart interactions
+const chartStyles = `
+  .recharts-bar-rectangle {
+    transition: all 0.2s ease;
+  }
+  
+  .recharts-bar-rectangle:hover {
+    filter: brightness(1.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .recharts-tooltip-wrapper {
+    z-index: 1000;
+  }
+  
+  .recharts-default-tooltip {
+    border-radius: 12px !important;
+    backdrop-filter: blur(8px) !important;
+  }
+`;
 
-const performanceMetrics = [
-  { metric: 'Total Return', value: '+12.3%', change: '+2.1%', status: 'positive' },
-  { metric: 'Annualized Return', value: '+18.7%', change: '+1.8%', status: 'positive' },
-  { metric: 'Sharpe Ratio', value: '1.24', change: '+0.08', status: 'positive' },
-  { metric: 'Max Drawdown', value: '-8.2%', change: '-1.1%', status: 'negative' },
-  { metric: 'Volatility', value: '15.4%', change: '-0.5%', status: 'positive' },
-  { metric: 'Alpha', value: '2.8%', change: '+0.3%', status: 'positive' }
-];
+// Sector allocation will be loaded from backend data
 
-const monthlyReturns = [
-  { month: 'Jul', returns: 2.3, benchmark: 1.8 },
-  { month: 'Aug', returns: 1.7, benchmark: 2.1 },
-  { month: 'Sep', returns: 3.2, benchmark: 2.4 },
-  { month: 'Oct', returns: -1.1, benchmark: -0.8 },
-  { month: 'Nov', returns: 4.1, benchmark: 3.2 },
-  { month: 'Dec', returns: 2.8, benchmark: 2.5 }
-];
+// Performance metrics will be calculated dynamically based on filtered data
 
-const riskMetrics = [
-  { category: 'Portfolio Risk', score: 6.2, maxScore: 10, color: '#f59e0b' },
-  { category: 'Sector Concentration', score: 7.1, maxScore: 10, color: '#ef4444' },
-  { category: 'Geographic Diversification', score: 4.8, maxScore: 10, color: '#10b981' },
-  { category: 'Market Cap Distribution', score: 8.3, maxScore: 10, color: '#06b6d4' }
-];
+// Monthly returns will be loaded from backend data
+
+// Risk metrics will be calculated dynamically based on portfolio data
 
 
 
-const correlationData = [
-  { asset: 'Portfolio', portfolio: 1.0, sp500: 0.82, nasdaq: 0.89, bonds: -0.15 },
-  { asset: 'S&P 500', portfolio: 0.82, sp500: 1.0, nasdaq: 0.94, bonds: -0.22 },
-  { asset: 'NASDAQ', portfolio: 0.89, sp500: 0.94, nasdaq: 1.0, bonds: -0.18 },
-  { asset: 'Bonds', portfolio: -0.15, sp500: -0.22, nasdaq: -0.18, bonds: 1.0 }
-];
+// Correlation data will be calculated dynamically based on portfolio data
 
 export function Analytics() {
   const [timeframe, setTimeframe] = useState("6M");
@@ -60,6 +51,37 @@ export function Analytics() {
     refetchInterval: 30000
   });
 
+  // Filter data based on selected timeframe
+  const getFilteredData = () => {
+    if (!portfolioData) return { monthlyReturns: [], history: [] };
+    
+    const monthlyReturns = (portfolioData as any)?.monthlyReturns || [];
+    const history = (portfolioData as any)?.history || [];
+    
+    // Calculate how many months to show based on timeframe
+    const monthsToShow = {
+      "1M": 1,
+      "3M": 3,
+      "6M": 6,
+      "1Y": 12,
+      "ALL": monthlyReturns.length
+    };
+    
+    const months = monthsToShow[timeframe as keyof typeof monthsToShow] || 6;
+    
+    // Filter monthly returns
+    const filteredReturns = monthlyReturns.slice(-months);
+    
+    // Filter history data (last N months of daily data)
+    const daysToShow = months * 30; // Approximate
+    const filteredHistory = history.slice(-daysToShow);
+    
+    return {
+      monthlyReturns: filteredReturns,
+      history: filteredHistory
+    };
+  };
+
   // Calculate top performers and underperformers from MySQL portfolio data
   const portfolioSummary = {
     totalValue: (portfolioData as any)?.totalValue || 0,
@@ -67,7 +89,280 @@ export function Analytics() {
     totalGainPercent: (portfolioData as any)?.monthlyGrowth || 0,
   };
   const holdings = (portfolioData as any)?.assets || [];
-  const chartData = (portfolioData as any)?.history || [];
+  const sectorAllocation = (portfolioData as any)?.sectorAllocation || [];
+  
+  // Get filtered data based on timeframe
+  const { monthlyReturns, history: chartData } = getFilteredData();
+
+  // Calculate dynamic performance metrics based on filtered data
+  const calculatePerformanceMetrics = () => {
+    if (!monthlyReturns || monthlyReturns.length === 0) {
+      return [
+        { metric: 'Total Return', value: '0.0%', change: '0.0%', status: 'neutral' },
+        { metric: 'Annualized Return', value: '0.0%', change: '0.0%', status: 'neutral' },
+        { metric: 'Sharpe Ratio', value: '0.00', change: '0.00', status: 'neutral' },
+        { metric: 'Max Drawdown', value: '0.0%', change: '0.0%', status: 'neutral' },
+        { metric: 'Volatility', value: '0.0%', change: '0.0%', status: 'neutral' },
+        { metric: 'Alpha', value: '0.0%', change: '0.0%', status: 'neutral' }
+      ];
+    }
+
+    // Calculate total return for the selected timeframe
+    const totalReturn = monthlyReturns.reduce((sum: number, month: any) => sum + (month.returns || 0), 0);
+    
+    // Calculate benchmark return for comparison
+    const benchmarkReturn = monthlyReturns.reduce((sum: number, month: any) => sum + (month.benchmark || 0), 0);
+    
+    // Calculate alpha (excess return over benchmark)
+    const alpha = totalReturn - benchmarkReturn;
+    
+    // Calculate annualized return (assuming monthly data)
+    const months = monthlyReturns.length;
+    const annualizedReturn = months > 0 ? Math.pow(1 + totalReturn / 100, 12 / months) - 1 : 0;
+    
+    // Calculate volatility (standard deviation of monthly returns)
+    const returnsArray = monthlyReturns.map((month: any) => month.returns || 0);
+    const meanReturn = returnsArray.reduce((sum: number, val: number) => sum + val, 0) / returnsArray.length;
+    const variance = returnsArray.reduce((sum: number, val: number) => sum + Math.pow(val - meanReturn, 2), 0) / returnsArray.length;
+    const volatility = Math.sqrt(variance);
+    
+    // Calculate Sharpe ratio (assuming risk-free rate of 2%)
+    const riskFreeRate = 2.0; // Annual risk-free rate
+    const monthlyRiskFreeRate = riskFreeRate / 12;
+    const excessReturn = meanReturn - monthlyRiskFreeRate;
+    const sharpeRatio = volatility > 0 ? excessReturn / volatility : 0;
+    
+    // Calculate max drawdown (simplified - would need daily data for accurate calculation)
+    let maxDrawdown = 0;
+    let peak = 0;
+    let cumulativeReturn = 0;
+    
+    monthlyReturns.forEach((month: any) => {
+      cumulativeReturn += (month.returns || 0);
+      if (cumulativeReturn > peak) {
+        peak = cumulativeReturn;
+      }
+      const drawdown = (peak - cumulativeReturn) / (1 + peak / 100);
+      if (drawdown > maxDrawdown) {
+        maxDrawdown = drawdown;
+      }
+    });
+
+    return [
+      { 
+        metric: 'Total Return', 
+        value: `${totalReturn >= 0 ? '+' : ''}${totalReturn.toFixed(1)}%`, 
+        change: `${alpha >= 0 ? '+' : ''}${alpha.toFixed(1)}% vs S&P 500`, 
+        status: totalReturn >= 0 ? 'positive' : 'negative' 
+      },
+      { 
+        metric: 'Annualized Return', 
+        value: `${annualizedReturn >= 0 ? '+' : ''}${(annualizedReturn * 100).toFixed(1)}%`, 
+        change: `${(annualizedReturn * 100 - benchmarkReturn) >= 0 ? '+' : ''}${((annualizedReturn * 100) - benchmarkReturn).toFixed(1)}% vs S&P 500`, 
+        status: annualizedReturn >= 0 ? 'positive' : 'negative' 
+      },
+      { 
+        metric: 'Sharpe Ratio', 
+        value: sharpeRatio.toFixed(2), 
+        change: `${sharpeRatio >= 1 ? '+' : ''}${(sharpeRatio - 1).toFixed(2)} vs benchmark`, 
+        status: sharpeRatio >= 1 ? 'positive' : 'negative' 
+      },
+      { 
+        metric: 'Max Drawdown', 
+        value: `-${(maxDrawdown * 100).toFixed(1)}%`, 
+        change: `${maxDrawdown <= 0.1 ? '+' : ''}${((0.1 - maxDrawdown) * 100).toFixed(1)}% vs target`, 
+        status: maxDrawdown <= 0.1 ? 'positive' : 'negative' 
+      },
+      { 
+        metric: 'Volatility', 
+        value: `${volatility.toFixed(1)}%`, 
+        change: `${volatility <= 15 ? '+' : ''}${(15 - volatility).toFixed(1)}% vs target`, 
+        status: volatility <= 15 ? 'positive' : 'negative' 
+      },
+      { 
+        metric: 'Alpha', 
+        value: `${alpha >= 0 ? '+' : ''}${alpha.toFixed(1)}%`, 
+        change: `${alpha >= 0 ? '+' : ''}${alpha.toFixed(1)}% excess return`, 
+        status: alpha >= 0 ? 'positive' : 'negative' 
+      }
+    ];
+  };
+
+  const performanceMetrics = calculatePerformanceMetrics();
+
+  // Calculate dynamic risk metrics based on portfolio data
+  const calculateRiskMetrics = () => {
+    if (!holdings || holdings.length === 0 || !sectorAllocation || sectorAllocation.length === 0) {
+      return [
+        { category: 'Portfolio Risk', score: 5.0, maxScore: 10, color: '#f59e0b', description: 'No data available' },
+        { category: 'Sector Concentration', score: 5.0, maxScore: 10, color: '#ef4444', description: 'No data available' },
+        { category: 'Geographic Diversification', score: 5.0, maxScore: 10, color: '#10b981', description: 'No data available' },
+        { category: 'Market Cap Distribution', score: 5.0, maxScore: 10, color: '#06b6d4', description: 'No data available' }
+      ];
+    }
+
+    // 1. Portfolio Risk (based on volatility and drawdown)
+    let portfolioRiskScore = 5.0; // Default neutral score
+    if (monthlyReturns && monthlyReturns.length > 0) {
+      const returnsArray = monthlyReturns.map((month: any) => month.returns || 0);
+      const volatility = Math.sqrt(returnsArray.reduce((sum: number, val: number) => sum + Math.pow(val - returnsArray.reduce((a: number, b: number) => a + b, 0) / returnsArray.length, 2), 0) / returnsArray.length);
+      
+      // Higher volatility = higher risk score
+      if (volatility > 10) portfolioRiskScore = 8.5;
+      else if (volatility > 7) portfolioRiskScore = 7.0;
+      else if (volatility > 5) portfolioRiskScore = 5.5;
+      else if (volatility > 3) portfolioRiskScore = 4.0;
+      else portfolioRiskScore = 2.5;
+    }
+
+    // 2. Sector Concentration Risk
+    let sectorConcentrationScore = 5.0;
+    if (sectorAllocation.length > 0) {
+      // Calculate Herfindahl-Hirschman Index (HHI) for sector concentration
+      const hhi = sectorAllocation.reduce((sum: number, sector: any) => sum + Math.pow(sector.value, 2), 0);
+      
+      // HHI interpretation: <1500 = low concentration, 1500-2500 = moderate, >2500 = high
+      if (hhi > 3000) sectorConcentrationScore = 9.0;
+      else if (hhi > 2500) sectorConcentrationScore = 7.5;
+      else if (hhi > 2000) sectorConcentrationScore = 6.0;
+      else if (hhi > 1500) sectorConcentrationScore = 4.5;
+      else sectorConcentrationScore = 3.0;
+    }
+
+    // 3. Geographic Diversification (simplified - assuming US-focused portfolio)
+    let geographicScore = 5.0;
+    // For now, assume US-focused portfolio (moderate diversification)
+    // In a real implementation, you'd analyze the geographic exposure of holdings
+    geographicScore = 4.5; // Slightly below neutral for US concentration
+
+    // 4. Market Cap Distribution
+    let marketCapScore = 5.0;
+    if (holdings.length > 0) {
+      // Analyze market cap distribution (simplified)
+      const totalValue = holdings.reduce((sum: any, holding: any) => sum + ((holding.price || 0) * (holding.volume || 0)), 0);
+      const avgPositionSize = totalValue / holdings.length;
+      
+      // Check for position size concentration
+      const largePositions = holdings.filter((holding: any) => 
+        ((holding.price || 0) * (holding.volume || 0)) > totalValue * 0.15
+      ).length;
+      
+      if (largePositions > 2) marketCapScore = 8.0;
+      else if (largePositions > 1) marketCapScore = 6.5;
+      else if (largePositions > 0) marketCapScore = 5.5;
+      else marketCapScore = 4.0;
+    }
+
+    return [
+      { 
+        category: 'Portfolio Risk', 
+        score: portfolioRiskScore, 
+        maxScore: 10, 
+        color: portfolioRiskScore >= 7 ? '#ef4444' : portfolioRiskScore >= 5 ? '#f59e0b' : '#10b981',
+        description: portfolioRiskScore >= 7 ? 'High volatility detected' : portfolioRiskScore >= 5 ? 'Moderate volatility' : 'Low volatility'
+      },
+      { 
+        category: 'Sector Concentration', 
+        score: sectorConcentrationScore, 
+        maxScore: 10, 
+        color: sectorConcentrationScore >= 7 ? '#ef4444' : sectorConcentrationScore >= 5 ? '#f59e0b' : '#10b981',
+        description: sectorConcentrationScore >= 7 ? 'High sector concentration' : sectorConcentrationScore >= 5 ? 'Moderate concentration' : 'Well diversified'
+      },
+      { 
+        category: 'Geographic Diversification', 
+        score: geographicScore, 
+        maxScore: 10, 
+        color: geographicScore >= 7 ? '#ef4444' : geographicScore >= 5 ? '#f59e0b' : '#10b981',
+        description: geographicScore >= 7 ? 'Limited geographic exposure' : geographicScore >= 5 ? 'Moderate exposure' : 'Well diversified'
+      },
+      { 
+        category: 'Market Cap Distribution', 
+        score: marketCapScore, 
+        maxScore: 10, 
+        color: marketCapScore >= 7 ? '#ef4444' : marketCapScore >= 5 ? '#f59e0b' : '#10b981',
+        description: marketCapScore >= 7 ? 'Concentrated positions' : marketCapScore >= 5 ? 'Moderate concentration' : 'Well distributed'
+      }
+    ];
+  };
+
+  const riskMetrics = calculateRiskMetrics();
+
+  // Calculate dynamic correlation matrix based on portfolio data
+  const calculateCorrelationMatrix = () => {
+    if (!monthlyReturns || monthlyReturns.length === 0) {
+      return [
+        { asset: 'Portfolio', portfolio: 1.0, sp500: 0.0, nasdaq: 0.0, bonds: 0.0 },
+        { asset: 'S&P 500', portfolio: 0.0, sp500: 1.0, nasdaq: 0.0, bonds: 0.0 },
+        { asset: 'NASDAQ', portfolio: 0.0, sp500: 0.0, nasdaq: 1.0, bonds: 0.0 },
+        { asset: 'Bonds', portfolio: 0.0, sp500: 0.0, nasdaq: 0.0, bonds: 1.0 }
+      ];
+    }
+
+    // Extract portfolio and benchmark returns
+    const portfolioReturns = monthlyReturns.map((month: any) => month.returns || 0);
+    const sp500Returns = monthlyReturns.map((month: any) => month.benchmark || 0);
+    
+    // Calculate correlation coefficient function
+    const calculateCorrelation = (x: number[], y: number[]) => {
+      if (x.length !== y.length || x.length === 0) return 0;
+      
+      const n = x.length;
+      const sumX = x.reduce((a, b) => a + b, 0);
+      const sumY = y.reduce((a, b) => a + b, 0);
+      const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
+      const sumX2 = x.reduce((sum, xi) => sum + xi * xi, 0);
+      const sumY2 = y.reduce((sum, yi) => sum + yi * yi, 0);
+      
+      const numerator = n * sumXY - sumX * sumY;
+      const denominator = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+      
+      return denominator === 0 ? 0 : numerator / denominator;
+    };
+
+    // Calculate correlations
+    const portfolioSp500Corr = calculateCorrelation(portfolioReturns, sp500Returns);
+    
+    // For NASDAQ, we'll use a simplified approach based on S&P 500 correlation
+    // In a real implementation, you'd fetch NASDAQ data from yfinance
+    const nasdaqSp500Corr = 0.94; // Typical correlation between NASDAQ and S&P 500
+    const portfolioNasdaqCorr = portfolioSp500Corr * 0.95; // Slightly higher than S&P 500 correlation
+    
+    // For bonds, we'll use negative correlation (typical bond-equity relationship)
+    const bondCorr = -0.15; // Typical negative correlation with equities
+    
+    return [
+      { 
+        asset: 'Portfolio', 
+        portfolio: 1.0, 
+        sp500: portfolioSp500Corr, 
+        nasdaq: portfolioNasdaqCorr, 
+        bonds: bondCorr 
+      },
+      { 
+        asset: 'S&P 500', 
+        portfolio: portfolioSp500Corr, 
+        sp500: 1.0, 
+        nasdaq: nasdaqSp500Corr, 
+        bonds: bondCorr 
+      },
+      { 
+        asset: 'NASDAQ', 
+        portfolio: portfolioNasdaqCorr, 
+        sp500: nasdaqSp500Corr, 
+        nasdaq: 1.0, 
+        bonds: bondCorr 
+      },
+      { 
+        asset: 'Bonds', 
+        portfolio: bondCorr, 
+        sp500: bondCorr, 
+        nasdaq: bondCorr, 
+        bonds: 1.0 
+      }
+    ];
+  };
+
+  const correlationData = calculateCorrelationMatrix();
   
   const sortedByPerformance = holdings
     .filter((holding: any) => holding.change !== undefined && holding.change !== null)
@@ -112,6 +407,7 @@ export function Analytics() {
 
   return (
     <div className="min-h-screen bg-background">
+      <style dangerouslySetInnerHTML={{ __html: chartStyles }} />
       <Navigation />
       <div className="p-6">
         <div className="max-w-7xl mx-auto space-y-8">
@@ -122,8 +418,10 @@ export function Analytics() {
               <p className="text-xl text-muted-foreground mt-2">Deep insights into your investment performance</p>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-muted-foreground">Timeframe:</span>
               <Select value={timeframe} onValueChange={setTimeframe}>
-                <SelectTrigger className="w-32 bg-background border-border text-foreground">
+                  <SelectTrigger className="w-32 bg-background border-border text-foreground hover:border-blue-500/50 transition-colors">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-background border-border">
@@ -136,6 +434,47 @@ export function Analytics() {
               </Select>
             </div>
           </div>
+          </div>
+
+          {/* Timeframe Performance Summary */}
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Calendar className="w-5 h-5" />
+                <span>Performance Summary ({timeframe})</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {monthlyReturns.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-4 rounded-lg bg-green-500/10">
+                      <div className="text-2xl font-bold text-green-400">
+                        {monthlyReturns.reduce((sum: number, month: any) => sum + (month.returns || 0), 0).toFixed(1)}%
+                      </div>
+                      <div className="text-sm text-muted-foreground">Portfolio Return</div>
+                    </div>
+                    <div className="text-center p-4 rounded-lg bg-blue-500/10">
+                      <div className="text-2xl font-bold text-blue-400">
+                        {monthlyReturns.reduce((sum: number, month: any) => sum + (month.benchmark || 0), 0).toFixed(1)}%
+                      </div>
+                      <div className="text-sm text-muted-foreground">S&P 500 Return</div>
+                    </div>
+                  </div>
+                  <div className="text-center p-4 rounded-lg bg-purple-500/10">
+                    <div className="text-2xl font-bold text-purple-400">
+                      {monthlyReturns.reduce((sum: number, month: any) => sum + ((month.returns || 0) - (month.benchmark || 0)), 0).toFixed(1)}%
+                    </div>
+                    <div className="text-sm text-muted-foreground">Outperformance</div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-muted-foreground">No data available for selected timeframe</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
           {/* Performance Metrics Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -146,15 +485,18 @@ export function Analytics() {
                     <h3 className="text-sm font-medium text-muted-foreground">{metric.metric}</h3>
                     {metric.status === 'positive' ? (
                       <TrendingUp className="w-4 h-4 text-green-400" />
-                    ) : (
+                    ) : metric.status === 'negative' ? (
                       <TrendingDown className="w-4 h-4 text-red-400" />
+                    ) : (
+                      <Activity className="w-4 h-4 text-gray-400" />
                     )}
                   </div>
                   <div className="text-2xl font-bold text-foreground mb-1">{metric.value}</div>
                   <div className={`text-sm flex items-center ${
-                    metric.status === 'positive' ? 'text-green-400' : 'text-red-400'
+                    metric.status === 'positive' ? 'text-green-400' : 
+                    metric.status === 'negative' ? 'text-red-400' : 'text-gray-400'
                   }`}>
-                    {metric.change} vs last period
+                    {metric.change}
                   </div>
                 </CardContent>
               </Card>
@@ -173,6 +515,7 @@ export function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="h-80">
+                  {sectorAllocation.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
@@ -185,7 +528,7 @@ export function Analytics() {
                         animationBegin={0}
                         animationDuration={800}
                       >
-                        {sectorAllocation.map((entry, index) => (
+                          {sectorAllocation.map((entry: any, index: number) => (
                           <Cell 
                             key={`cell-${index}`} 
                             fill={entry.color}
@@ -196,12 +539,12 @@ export function Analytics() {
                               transition: 'all 0.3s ease',
                               cursor: 'pointer'
                             }}
-                            onMouseEnter={(e) => {
+                              onMouseEnter={(e: any) => {
                               e.target.style.filter = 'brightness(1.1)';
                               e.target.style.strokeWidth = '2';
                               e.target.style.stroke = '#ffffff';
                             }}
-                            onMouseLeave={(e) => {
+                              onMouseLeave={(e: any) => {
                               e.target.style.filter = 'brightness(1)';
                               e.target.style.strokeWidth = '0';
                               e.target.style.stroke = entry.color;
@@ -211,7 +554,7 @@ export function Analytics() {
                       </Pie>
                       <Tooltip 
                         formatter={(value: number, name: string, props: any) => [
-                          `$${props.payload.amount.toLocaleString()}`,
+                            `${props.payload.value}% ($${props.payload.amount.toLocaleString()})`,
                           props.payload.name
                         ]}
                         contentStyle={{
@@ -232,15 +575,25 @@ export function Analytics() {
                       />
                     </PieChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="text-muted-foreground mb-2">No sector data available</div>
+                        <div className="text-sm text-muted-foreground">Loading portfolio data...</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-4 mt-4">
-                  {sectorAllocation.map((sector, index) => (
+                  {sectorAllocation.map((sector: any, index: number) => (
                     <div key={index} className="flex items-center space-x-2">
                       <div 
                         className="w-3 h-3 rounded-full" 
                         style={{ backgroundColor: sector.color }}
                       ></div>
-                      <span className="text-sm text-muted-foreground">{sector.name}</span>
+                      <span className="text-sm text-muted-foreground">
+                        {sector.name} ({sector.value}%)
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -252,11 +605,12 @@ export function Analytics() {
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
                   <BarChart3 className="w-5 h-5" />
-                  <span>Returns vs S&P 500</span>
+                  <span>Returns vs S&P 500 ({timeframe})</span>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="h-80">
+                  {monthlyReturns.length > 0 ? (
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={monthlyReturns}>
                       <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
@@ -273,17 +627,103 @@ export function Analytics() {
                         tickFormatter={(value) => `${value}%`}
                       />
                       <Tooltip 
-                        formatter={(value: number) => [`${value}%`, value > 0 ? 'Return' : 'Loss']}
-                        contentStyle={{
-                          backgroundColor: 'hsl(var(--card))',
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Bar dataKey="returns" fill="#8b5cf6" name="Portfolio" />
-                      <Bar dataKey="benchmark" fill="#06b6d4" name="S&P 500" />
+                          content={({ active, payload, label }: any) => {
+                            if (active && payload && payload.length) {
+                              const portfolioData = payload.find((p: any) => p.name === 'Portfolio');
+                              const benchmarkData = payload.find((p: any) => p.name === 'S&P 500');
+                              
+                              if (portfolioData && benchmarkData) {
+                                const portfolioReturn = portfolioData.value;
+                                const benchmarkReturn = benchmarkData.value;
+                                const outperformance = portfolioReturn - benchmarkReturn;
+                                const outperformancePrefix = outperformance >= 0 ? '+' : '';
+                                
+                                return (
+                                  <div style={{
+                                    backgroundColor: 'rgba(30, 41, 59, 0.95)',
+                                    border: '1px solid rgba(148, 163, 184, 0.2)',
+                                    borderRadius: '12px',
+                                    backdropFilter: 'blur(8px)',
+                                    boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
+                                    padding: '12px 16px',
+                                    color: '#f1f5f9'
+                                  }}>
+                                    <div style={{ fontSize: '13px', fontWeight: '600', marginBottom: '8px', color: '#f1f5f9' }}>
+                                      {label} 2025
+                                    </div>
+                                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                      <span style={{ color: '#8b5cf6' }}>●</span> Portfolio: {(portfolioReturn >= 0 ? '+' : '') + portfolioReturn.toFixed(1)}%
+                                    </div>
+                                    <div style={{ fontSize: '12px', marginBottom: '4px' }}>
+                                      <span style={{ color: '#06b6d4' }}>●</span> S&P 500: {(benchmarkReturn >= 0 ? '+' : '') + benchmarkReturn.toFixed(1)}%
+                                    </div>
+                                    <div style={{ 
+                                      fontSize: '11px', 
+                                      marginTop: '6px', 
+                                      paddingTop: '6px', 
+                                      borderTop: '1px solid rgba(148, 163, 184, 0.3)',
+                                      color: outperformance >= 0 ? '#10b981' : '#ef4444'
+                                    }}>
+                                      Outperformance: {outperformancePrefix}{outperformance.toFixed(1)}%
+                                    </div>
+                                  </div>
+                                );
+                              }
+                            }
+                            return null;
+                          }}
+                          cursor={{
+                            fill: 'rgba(139, 92, 246, 0.08)',
+                            stroke: 'rgba(139, 92, 246, 0.3)',
+                            strokeWidth: 1,
+                            strokeDasharray: '3 3'
+                          }}
+                        />
+                        <Bar 
+                          dataKey="returns" 
+                          fill="#8b5cf6" 
+                          name="Portfolio"
+                          radius={[4, 4, 0, 0]}
+                          style={{
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer'
+                          }}
+                          onMouseEnter={(data: any, index: number) => {
+                            // Enhanced hover effect will be handled by CSS
+                          }}
+                        />
+                        <Bar 
+                          dataKey="benchmark" 
+                          fill="#06b6d4" 
+                          name="S&P 500"
+                          radius={[4, 4, 0, 0]}
+                          style={{
+                            transition: 'all 0.2s ease',
+                            cursor: 'pointer'
+                          }}
+                        />
                     </BarChart>
                   </ResponsiveContainer>
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <div className="text-center">
+                        <div className="text-muted-foreground mb-2">No monthly returns data available</div>
+                        <div className="text-sm text-muted-foreground">Loading comparison data...</div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Chart Legend */}
+                <div className="flex items-center justify-center space-x-6 mt-4 pt-4 border-t border-border/50">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#8b5cf6' }}></div>
+                    <span className="text-sm text-muted-foreground">Portfolio</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#06b6d4' }}></div>
+                    <span className="text-sm text-muted-foreground">S&P 500</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -298,12 +738,30 @@ export function Analytics() {
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Overall Risk Assessment */}
+              <div className="mb-6 p-4 rounded-lg bg-muted/50">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-foreground">Overall Risk Assessment</span>
+                  <span className="text-sm text-muted-foreground">
+                    {(() => {
+                      const avgRisk = riskMetrics.reduce((sum: number, risk: any) => sum + risk.score, 0) / riskMetrics.length;
+                      if (avgRisk >= 7) return 'High Risk Portfolio';
+                      if (avgRisk >= 5) return 'Moderate Risk Portfolio';
+                      return 'Low Risk Portfolio';
+                    })()}
+                  </span>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  Based on volatility, sector concentration, geographic exposure, and position sizing
+                </div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {riskMetrics.map((risk, index) => (
+                {riskMetrics.map((risk: any, index: number) => (
                   <div key={index} className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-foreground">{risk.category}</span>
-                      <span className="text-sm text-muted-foreground">{risk.score}/10</span>
+                      <span className="text-sm text-muted-foreground">{risk.score.toFixed(1)}/10</span>
                     </div>
                     <div className="w-full bg-muted rounded-full h-2">
                       <div 
@@ -316,6 +774,9 @@ export function Analytics() {
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {risk.score >= 7 ? 'High Risk' : risk.score >= 4 ? 'Medium Risk' : 'Low Risk'}
+                    </div>
+                    <div className="text-xs text-muted-foreground italic">
+                      {risk.description}
                     </div>
                   </div>
                 ))}
@@ -334,7 +795,7 @@ export function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {topPerformers.length > 0 ? topPerformers.map((stock, index) => (
+                  {topPerformers.length > 0 ? topPerformers.map((stock: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-background">
                       <div>
                         <div className="font-semibold text-foreground">{stock.symbol}</div>
@@ -363,7 +824,7 @@ export function Analytics() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {underPerformers.length > 0 ? underPerformers.map((stock, index) => (
+                  {underPerformers.length > 0 ? underPerformers.map((stock: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-background">
                       <div>
                         <div className="font-semibold text-foreground">{stock.symbol}</div>
@@ -389,57 +850,90 @@ export function Analytics() {
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
-                <span>Asset Correlation Matrix</span>
+                <span>Asset Correlation Matrix ({timeframe})</span>
               </CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Correlation Summary */}
+              <div className="mb-6 p-4 rounded-lg bg-muted/50">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-foreground">
+                      {(() => {
+                        const portfolioSp500Corr = correlationData.find((row: any) => row.asset === 'Portfolio')?.sp500 || 0;
+                        return portfolioSp500Corr.toFixed(2);
+                      })()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Portfolio vs S&P 500</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-foreground">
+                      {(() => {
+                        const portfolioNasdaqCorr = correlationData.find((row: any) => row.asset === 'Portfolio')?.nasdaq || 0;
+                        return portfolioNasdaqCorr.toFixed(2);
+                      })()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Portfolio vs NASDAQ</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-semibold text-foreground">
+                      {(() => {
+                        const portfolioBondsCorr = correlationData.find((row: any) => row.asset === 'Portfolio')?.bonds || 0;
+                        return portfolioBondsCorr.toFixed(2);
+                      })()}
+                    </div>
+                    <div className="text-sm text-muted-foreground">Portfolio vs Bonds</div>
+                  </div>
+                </div>
+              </div>
+              
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="w-full border-collapse">
                   <thead>
-                    <tr>
-                      <th className="text-left p-2 text-sm font-medium text-muted-foreground">Asset</th>
-                      <th className="text-center p-2 text-sm font-medium text-muted-foreground">Portfolio</th>
-                      <th className="text-center p-2 text-sm font-medium text-muted-foreground">S&P 500</th>
-                      <th className="text-center p-2 text-sm font-medium text-muted-foreground">NASDAQ</th>
-                      <th className="text-center p-2 text-sm font-medium text-muted-foreground">Bonds</th>
+                    <tr className="border-b border-border">
+                      <th className="text-left p-3 text-sm font-semibold text-muted-foreground bg-muted/30">Asset</th>
+                      <th className="text-center p-3 text-sm font-semibold text-muted-foreground bg-muted/30">Portfolio</th>
+                      <th className="text-center p-3 text-sm font-semibold text-muted-foreground bg-muted/30">S&P 500</th>
+                      <th className="text-center p-3 text-sm font-semibold text-muted-foreground bg-muted/30">NASDAQ</th>
+                      <th className="text-center p-3 text-sm font-semibold text-muted-foreground bg-muted/30">Bonds</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {correlationData.map((row, index) => (
-                      <tr key={index} className="border-t border-border">
-                        <td className="p-2 font-medium text-foreground">{row.asset}</td>
-                        <td className="p-2 text-center">
-                          <span className={`inline-flex items-center justify-center w-12 h-6 rounded text-xs font-medium ${
-                            Math.abs(row.portfolio) > 0.7 ? 'bg-red-500/20 text-red-400' :
-                            Math.abs(row.portfolio) > 0.3 ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
+                    {correlationData.map((row: any, index: number) => (
+                      <tr key={index} className="border-t border-border hover:bg-muted/20 transition-colors">
+                        <td className="p-3 font-semibold text-foreground">{row.asset}</td>
+                        <td className="p-3 text-center">
+                          <span className={`inline-flex items-center justify-center w-14 h-7 rounded-md text-xs font-medium transition-all ${
+                            Math.abs(row.portfolio) > 0.7 ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                            Math.abs(row.portfolio) > 0.3 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-green-500/20 text-green-400 border border-green-500/30'
                           }`}>
                             {row.portfolio.toFixed(2)}
                           </span>
                         </td>
-                        <td className="p-2 text-center">
-                          <span className={`inline-flex items-center justify-center w-12 h-6 rounded text-xs font-medium ${
-                            Math.abs(row.sp500) > 0.7 ? 'bg-red-500/20 text-red-400' :
-                            Math.abs(row.sp500) > 0.3 ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
+                        <td className="p-3 text-center">
+                          <span className={`inline-flex items-center justify-center w-14 h-7 rounded-md text-xs font-medium transition-all ${
+                            Math.abs(row.sp500) > 0.7 ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                            Math.abs(row.sp500) > 0.3 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-green-500/20 text-green-400 border border-green-500/30'
                           }`}>
                             {row.sp500.toFixed(2)}
                           </span>
                         </td>
-                        <td className="p-2 text-center">
-                          <span className={`inline-flex items-center justify-center w-12 h-6 rounded text-xs font-medium ${
-                            Math.abs(row.nasdaq) > 0.7 ? 'bg-red-500/20 text-red-400' :
-                            Math.abs(row.nasdaq) > 0.3 ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
+                        <td className="p-3 text-center">
+                          <span className={`inline-flex items-center justify-center w-14 h-7 rounded-md text-xs font-medium transition-all ${
+                            Math.abs(row.nasdaq) > 0.7 ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                            Math.abs(row.nasdaq) > 0.3 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-green-500/20 text-green-400 border border-green-500/30'
                           }`}>
                             {row.nasdaq.toFixed(2)}
                           </span>
                         </td>
-                        <td className="p-2 text-center">
-                          <span className={`inline-flex items-center justify-center w-12 h-6 rounded text-xs font-medium ${
-                            Math.abs(row.bonds) > 0.7 ? 'bg-red-500/20 text-red-400' :
-                            Math.abs(row.bonds) > 0.3 ? 'bg-yellow-500/20 text-yellow-400' :
-                            'bg-green-500/20 text-green-400'
+                        <td className="p-3 text-center">
+                          <span className={`inline-flex items-center justify-center w-14 h-7 rounded-md text-xs font-medium transition-all ${
+                            Math.abs(row.bonds) > 0.7 ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                            Math.abs(row.bonds) > 0.3 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-green-500/20 text-green-400 border border-green-500/30'
                           }`}>
                             {row.bonds.toFixed(2)}
                           </span>
@@ -449,9 +943,22 @@ export function Analytics() {
                   </tbody>
                 </table>
               </div>
-              <p className="text-xs text-muted-foreground mt-4">
-                High correlation (|r| &gt; 0.7) indicates assets move together. Low correlation provides better diversification.
-              </p>
+              <div className="mt-6 p-4 rounded-lg bg-blue-500/5 border border-blue-500/10">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0 mt-0.5">
+                    <div className="w-2 h-2 rounded-full bg-blue-400"></div>
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-medium text-foreground mb-1">Correlation Interpretation</h4>
+                    <div className="text-xs text-muted-foreground space-y-1">
+                      <p><span className="font-medium text-red-400">High correlation (|r| &gt; 0.7):</span> Assets move together, limited diversification benefit</p>
+                      <p><span className="font-medium text-yellow-400">Moderate correlation (0.3 &lt; |r| ≤ 0.7):</span> Some diversification benefit</p>
+                      <p><span className="font-medium text-green-400">Low correlation (|r| ≤ 0.3):</span> Good diversification, assets move independently</p>
+                      <p><span className="font-medium text-blue-400">Negative correlation:</span> Excellent diversification, assets move in opposite directions</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
