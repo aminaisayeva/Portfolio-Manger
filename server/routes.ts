@@ -413,10 +413,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get recent transactions
   app.get("/api/transactions", async (req, res) => {
     try {
-      const userId = DEFAULT_USER_ID;
-      const limit = parseInt(req.query.limit as string) || 10;
+      const limit = parseInt(req.query.limit as string) || null; // No default limit
       
-      const transactions = await storage.getUserTransactions(userId, limit);
+      // First try to fetch from Flask backend for real portfolio transactions
+      try {
+        console.log('🔍 Attempting to fetch transactions from Flask backend...');
+        const response = await fetch(`http://localhost:8000/api/transactions`);
+        
+        if (response.ok) {
+          const transactions = await response.json();
+          console.log(`✅ Fetched ${transactions.length} transactions from Flask backend`);
+          
+          // Apply limit only if explicitly specified
+          const limitedTransactions = limit ? transactions.slice(0, limit) : transactions;
+          return res.json(limitedTransactions);
+        } else {
+          console.log(`❌ Flask backend returned ${response.status} for transactions`);
+        }
+      } catch (flaskError) {
+        console.log('⚠️ Flask backend error for transactions:', (flaskError as Error).message);
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      console.log('🔄 Using fallback transaction data');
+      const userId = DEFAULT_USER_ID;
+      const transactions = await storage.getUserTransactions(userId, limit || 10);
       res.json(transactions);
     } catch (error) {
       console.error("Transactions error:", error);

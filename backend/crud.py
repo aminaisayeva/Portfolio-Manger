@@ -251,7 +251,7 @@ def get_portfolio(orderBy, numEntries=None):
 
         assets = []
         total_value = 0
-        cost_basis = 0
+        stock_cost_basis = 0
 
         for row in result:
             ticker = row["pi_symbol"]
@@ -278,11 +278,21 @@ def get_portfolio(orderBy, numEntries=None):
 
             assets.append(asset)
             total_value += current_price * volume
-            cost_basis += weighted_buy_price * volume
+            stock_cost_basis += weighted_buy_price * volume
 
-        profit_loss = total_value - cost_basis
-        monthly_growth = round(
-            (profit_loss / cost_basis) * 100 / 12, 2) if cost_basis > 0 else 0
+        # Get cash balance and add to total value
+        cash_balance = get_cash_balance()
+        total_value += cash_balance
+        
+        # Calculate total initial investment
+        # From data.sql, initial deposit was $25,000
+        # All stock purchases came from this initial cash
+        total_initial_investment = 25000
+        
+        # Calculate profit/loss including cash balance
+        profit_loss = total_value - total_initial_investment
+        total_return_percent = round(
+            (profit_loss / total_initial_investment) * 100, 2) if total_initial_investment > 0 else 0
 
         # pick bestToken based on highest absolute P/L
         best_token = max(assets,
@@ -290,16 +300,21 @@ def get_portfolio(orderBy, numEntries=None):
                          (calculate_change(a["price"], a["weighted_buy_price"])))
         # best_token.pl = calculate_change(best_token["price"], best_token["buy_price"])
 
-        # build fake 12-month history linearly
+        # build portfolio history from actual inception date (April 7th, 2025)
+        portfolio_inception_date = datetime(2025, 4, 7)  # April 7th, 2025
+        current_date = datetime.now()
+        days_since_inception = (current_date - portfolio_inception_date).days
+        
+        # Generate history from inception to today
         history = []
-        for i in range(90):
-            date = (datetime.now() - timedelta(days=89 - i)).strftime("%Y-%m-%d")
-            value = cost_basis + ((total_value - cost_basis) / 89) * i
+        for i in range(days_since_inception + 1):
+            date = (portfolio_inception_date + timedelta(days=i)).strftime("%Y-%m-%d")
+            # Linear progression from initial investment to current value
+            if days_since_inception > 0:
+                value = total_initial_investment + ((total_value - total_initial_investment) / days_since_inception) * i
+            else:
+                value = total_initial_investment
             history.append({"date": date, "value": round(value, 2)})
-
-        # Get cash balance and add to total value
-        cash_balance = get_cash_balance()
-        total_value += cash_balance
         
         # Calculate sector allocation
         sector_allocation = calculate_sector_allocation(assets, total_value)
@@ -314,7 +329,7 @@ def get_portfolio(orderBy, numEntries=None):
             "totalValue": round(total_value, 2),
             "profitLoss": round(profit_loss, 2),
             "realizedGains": realized_gains,
-            "monthlyGrowth": monthly_growth,
+            "totalReturnPercent": total_return_percent,
             "cashBalance": cash_balance,
             "bestToken": best_token,
             "history": history,
@@ -333,7 +348,7 @@ def get_portfolio(orderBy, numEntries=None):
         return {
             "totalValue": cash_balance + 12000,
             "profitLoss": 500,
-            "monthlyGrowth": 2.5,
+            "totalReturnPercent": 4.17,  # 500/12000 * 100
             "cashBalance": cash_balance,
             "assets": []
         }

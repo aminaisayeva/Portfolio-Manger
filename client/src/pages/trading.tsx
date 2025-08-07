@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -17,14 +17,19 @@ interface Transaction {
   type: 'buy' | 'sell';
   shares: number;
   price: number;
-  total: number;
+  totalAmount: number;
   timestamp: string;
+  date: string;
+  sector?: string;
+  industry?: string;
 }
 
 export function Trading() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 10;
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['/api/transactions'],
@@ -69,17 +74,48 @@ export function Trading() {
     return matchesSearch && matchesType && matchesDate;
   });
 
+  // Calculate better metrics
   const totalBuyValue = transactions
     .filter((t: Transaction) => t.type === 'buy')
-    .reduce((sum: number, t: Transaction) => sum + t.total, 0);
+    .reduce((sum: number, t: Transaction) => sum + t.totalAmount, 0);
 
   const totalSellValue = transactions
     .filter((t: Transaction) => t.type === 'sell')
-    .reduce((sum: number, t: Transaction) => sum + t.total, 0);
+    .reduce((sum: number, t: Transaction) => sum + t.totalAmount, 0);
 
   const totalTransactions = transactions.length;
   const buyTransactions = transactions.filter((t: Transaction) => t.type === 'buy').length;
   const sellTransactions = transactions.filter((t: Transaction) => t.type === 'sell').length;
+
+  // Calculate realized gains (simplified - actual calculation would need buy/sell matching)
+  const realizedGains = portfolio?.realizedGains || 0;
+
+  // Calculate most traded stock
+  const stockTradeCounts = transactions.reduce((acc: { [key: string]: number }, t: Transaction) => {
+    acc[t.symbol] = (acc[t.symbol] || 0) + 1;
+    return acc;
+  }, {});
+  const mostTradedStock = Object.entries(stockTradeCounts)
+    .sort(([,a], [,b]) => (b as number) - (a as number))[0]?.[0] || 'N/A';
+
+  // Calculate average trade size
+  const averageTradeSize = totalTransactions > 0 
+    ? (totalBuyValue + totalSellValue) / totalTransactions 
+    : 0;
+
+  // Calculate active trading days
+  const uniqueTradingDays = new Set(transactions.map((t: Transaction) => t.date)).size;
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredTransactions.length / transactionsPerPage);
+  const startIndex = (currentPage - 1) * transactionsPerPage;
+  const endIndex = startIndex + transactionsPerPage;
+  const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, filterType, dateFilter]);
 
   if (isLoading) {
     return (
@@ -109,56 +145,94 @@ export function Trading() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <Card className="bg-card border-border hover:border-green-500/30 transition-all">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Transactions</CardTitle>
-              <BarChart3 className="h-4 w-4 text-blue-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">{totalTransactions}</div>
-              <div className="flex items-center space-x-2 text-sm">
-                <span className="text-green-400">{buyTransactions} buys</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-red-400">{sellTransactions} sells</span>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Bought</CardTitle>
-              <TrendingUp className="h-4 w-4 text-green-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">${totalBuyValue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Investment capital deployed</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Sold</CardTitle>
-              <TrendingDown className="h-4 w-4 text-red-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-foreground">${totalSellValue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Capital realized from sales</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Current Portfolio</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Portfolio Value</CardTitle>
               <DollarSign className="h-4 w-4 text-purple-400" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-foreground">
-                ${portfolio?.summary?.totalValue?.toLocaleString() || '0'}
+                ${portfolio?.totalValue?.toLocaleString() || '0'}
               </div>
               <div className="flex items-center space-x-1 text-xs">
-                <span className={`${(portfolio?.summary?.totalGain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(portfolio?.summary?.totalGain || 0) >= 0 ? '+' : ''}${portfolio?.summary?.totalGain?.toFixed(2) || '0'}
+                <span className={`${(portfolio?.profitLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {(portfolio?.profitLoss || 0) >= 0 ? '+' : ''}${portfolio?.profitLoss?.toFixed(2) || '0'}
                 </span>
                 <span className="text-muted-foreground">total P&L</span>
               </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Realized Gains</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">${realizedGains.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Actual profits from sales</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Most Traded</CardTitle>
+              <BarChart3 className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{mostTradedStock}</div>
+              <p className="text-xs text-muted-foreground">By transaction count</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border hover:border-green-500/30 transition-all">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Trading Activity</CardTitle>
+              <Clock className="h-4 w-4 text-orange-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">{totalTransactions}</div>
+              <div className="flex items-center space-x-2 text-xs">
+                <span className="text-muted-foreground">{uniqueTradingDays} days</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground">${averageTradeSize.toFixed(0)} avg</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Additional Trading Metrics */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Buy vs Sell Ratio</CardTitle>
+              <BarChart3 className="h-4 w-4 text-blue-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">
+                {totalTransactions > 0 ? Math.round((buyTransactions / totalTransactions) * 100) : 0}% / {totalTransactions > 0 ? Math.round((sellTransactions / totalTransactions) * 100) : 0}%
+              </div>
+              <p className="text-xs text-muted-foreground">Buy / Sell transactions</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Capital Deployed</CardTitle>
+              <TrendingUp className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">${totalBuyValue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Total investment capital</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-border">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Cash Position</CardTitle>
+              <DollarSign className="h-4 w-4 text-purple-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-foreground">${portfolio?.cashBalance?.toLocaleString() || '0'}</div>
+              <p className="text-xs text-muted-foreground">Available for trading</p>
             </CardContent>
           </Card>
         </div>
@@ -218,6 +292,11 @@ export function Trading() {
               <Badge variant="secondary" className="ml-2">
                 {filteredTransactions.length} transactions
               </Badge>
+              {totalPages > 1 && (
+                <Badge variant="outline" className="ml-2">
+                  Page {currentPage} of {totalPages}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -234,7 +313,7 @@ export function Trading() {
               </div>
             ) : (
               <div className="space-y-4">
-                {filteredTransactions.map((transaction: Transaction) => (
+                {currentTransactions.map((transaction: Transaction) => (
                   <div
                     key={transaction.id}
                     className="flex items-center justify-between p-4 rounded-lg bg-background border border-border hover:border-blue-500/30 transition-all"
@@ -284,20 +363,60 @@ export function Trading() {
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Price</p>
-                          <p className="font-medium text-foreground">${parseFloat(transaction.price || '0').toFixed(2)}</p>
+                          <p className="font-medium text-foreground">${transaction.price.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Total</p>
                           <p className={`font-bold text-lg ${
                             transaction.type === 'buy' ? 'text-red-400' : 'text-green-400'
                           }`}>
-                            {transaction.type === 'buy' ? '-' : '+'}${parseFloat((transaction as any).totalAmount || '0').toLocaleString()}
+                            {transaction.type === 'buy' ? '-' : '+'}${transaction.totalAmount.toLocaleString()}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
+                
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between pt-6 border-t border-border">
+                    <div className="text-sm text-muted-foreground">
+                      Showing {startIndex + 1} to {Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length} transactions
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage - 1)}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <div className="flex items-center space-x-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-8 h-8 p-0"
+                          >
+                            {page}
+                          </Button>
+                        ))}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

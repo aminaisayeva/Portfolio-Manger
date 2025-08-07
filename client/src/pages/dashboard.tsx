@@ -61,12 +61,12 @@ export default function Dashboard() {
 
   // Adapt to your MySQL Flask backend structure
   const portfolioSummary = {
-    totalValue: (portfolioData as any)?.summary?.totalValue || (portfolioData as any)?.totalValue || 0,
-    totalGain: (portfolioData as any)?.summary?.totalGain || (portfolioData as any)?.profitLoss || 0,
-    totalGainPercent: (portfolioData as any)?.summary?.totalGainPercent || (portfolioData as any)?.monthlyGrowth || 0,
+    totalValue: (portfolioData as any)?.totalValue || 0,
+    totalGain: (portfolioData as any)?.profitLoss || 0,
+    totalGainPercent: (portfolioData as any)?.totalReturnPercent || 0,
     dayGain: (portfolioData as any)?.summary?.dayGain || 0,
     dayGainPercent: (portfolioData as any)?.summary?.dayGainPercent || 0,
-    cashBalance: (portfolioData as any)?.summary?.cashBalance || (portfolioData as any)?.cashBalance || 0,
+    cashBalance: (portfolioData as any)?.cashBalance || 0,
     realizedGains: (portfolioData as any)?.realizedGains || 0,
     unrealizedGains: (portfolioData as any)?.profitLoss || 0
   };
@@ -108,6 +108,7 @@ export default function Dashboard() {
                     <p className="text-2xl font-bold text-foreground">
                       ${portfolioSummary.totalValue ? portfolioSummary.totalValue.toLocaleString() : "0.00"}
                     </p>
+                    <p className="text-xs text-muted-foreground">Holdings + Cash</p>
                   </div>
                 </div>
               </CardContent>
@@ -126,11 +127,12 @@ export default function Dashboard() {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Return</p>
+                    <p className="text-sm text-muted-foreground">Total Return</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {(portfolioSummary.totalGainPercent || 0) >= 0 ? '+' : ''}
                       {portfolioSummary.totalGainPercent ? portfolioSummary.totalGainPercent.toFixed(2) : "0.00"}%
                     </p>
+                    <p className="text-xs text-muted-foreground">Since Inception</p>
                   </div>
                 </div>
               </CardContent>

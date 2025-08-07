@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { TrendingUp, TrendingDown, Target, PieChart as PieChartIcon, BarChart3, Activity, AlertTriangle, Star, Calendar, DollarSign } from "lucide-react";
+import { TrendingUp, TrendingDown, Target, PieChart as PieChartIcon, BarChart3, Activity, Star, Calendar, DollarSign } from "lucide-react";
 
 // Custom styles for enhanced chart interactions
 const chartStyles = `
@@ -190,102 +190,7 @@ export function Analytics() {
 
   const performanceMetrics = calculatePerformanceMetrics();
 
-  // Calculate dynamic risk metrics based on portfolio data
-  const calculateRiskMetrics = () => {
-    if (!holdings || holdings.length === 0 || !sectorAllocation || sectorAllocation.length === 0) {
-      return [
-        { category: 'Portfolio Risk', score: 5.0, maxScore: 10, color: '#f59e0b', description: 'No data available' },
-        { category: 'Sector Concentration', score: 5.0, maxScore: 10, color: '#ef4444', description: 'No data available' },
-        { category: 'Geographic Diversification', score: 5.0, maxScore: 10, color: '#10b981', description: 'No data available' },
-        { category: 'Market Cap Distribution', score: 5.0, maxScore: 10, color: '#06b6d4', description: 'No data available' }
-      ];
-    }
 
-    // 1. Portfolio Risk (based on volatility and drawdown)
-    let portfolioRiskScore = 5.0; // Default neutral score
-    if (monthlyReturns && monthlyReturns.length > 0) {
-      const returnsArray = monthlyReturns.map((month: any) => month.returns || 0);
-      const volatility = Math.sqrt(returnsArray.reduce((sum: number, val: number) => sum + Math.pow(val - returnsArray.reduce((a: number, b: number) => a + b, 0) / returnsArray.length, 2), 0) / returnsArray.length);
-      
-      // Higher volatility = higher risk score
-      if (volatility > 10) portfolioRiskScore = 8.5;
-      else if (volatility > 7) portfolioRiskScore = 7.0;
-      else if (volatility > 5) portfolioRiskScore = 5.5;
-      else if (volatility > 3) portfolioRiskScore = 4.0;
-      else portfolioRiskScore = 2.5;
-    }
-
-    // 2. Sector Concentration Risk
-    let sectorConcentrationScore = 5.0;
-    if (sectorAllocation.length > 0) {
-      // Calculate Herfindahl-Hirschman Index (HHI) for sector concentration
-      const hhi = sectorAllocation.reduce((sum: number, sector: any) => sum + Math.pow(sector.value, 2), 0);
-      
-      // HHI interpretation: <1500 = low concentration, 1500-2500 = moderate, >2500 = high
-      if (hhi > 3000) sectorConcentrationScore = 9.0;
-      else if (hhi > 2500) sectorConcentrationScore = 7.5;
-      else if (hhi > 2000) sectorConcentrationScore = 6.0;
-      else if (hhi > 1500) sectorConcentrationScore = 4.5;
-      else sectorConcentrationScore = 3.0;
-    }
-
-    // 3. Geographic Diversification (simplified - assuming US-focused portfolio)
-    let geographicScore = 5.0;
-    // For now, assume US-focused portfolio (moderate diversification)
-    // In a real implementation, you'd analyze the geographic exposure of holdings
-    geographicScore = 4.5; // Slightly below neutral for US concentration
-
-    // 4. Market Cap Distribution
-    let marketCapScore = 5.0;
-    if (holdings.length > 0) {
-      // Analyze market cap distribution (simplified)
-      const totalValue = holdings.reduce((sum: any, holding: any) => sum + ((holding.price || 0) * (holding.volume || 0)), 0);
-      const avgPositionSize = totalValue / holdings.length;
-      
-      // Check for position size concentration
-      const largePositions = holdings.filter((holding: any) => 
-        ((holding.price || 0) * (holding.volume || 0)) > totalValue * 0.15
-      ).length;
-      
-      if (largePositions > 2) marketCapScore = 8.0;
-      else if (largePositions > 1) marketCapScore = 6.5;
-      else if (largePositions > 0) marketCapScore = 5.5;
-      else marketCapScore = 4.0;
-    }
-
-    return [
-      { 
-        category: 'Portfolio Risk', 
-        score: portfolioRiskScore, 
-        maxScore: 10, 
-        color: portfolioRiskScore >= 7 ? '#ef4444' : portfolioRiskScore >= 5 ? '#f59e0b' : '#10b981',
-        description: portfolioRiskScore >= 7 ? 'High volatility detected' : portfolioRiskScore >= 5 ? 'Moderate volatility' : 'Low volatility'
-      },
-      { 
-        category: 'Sector Concentration', 
-        score: sectorConcentrationScore, 
-        maxScore: 10, 
-        color: sectorConcentrationScore >= 7 ? '#ef4444' : sectorConcentrationScore >= 5 ? '#f59e0b' : '#10b981',
-        description: sectorConcentrationScore >= 7 ? 'High sector concentration' : sectorConcentrationScore >= 5 ? 'Moderate concentration' : 'Well diversified'
-      },
-      { 
-        category: 'Geographic Diversification', 
-        score: geographicScore, 
-        maxScore: 10, 
-        color: geographicScore >= 7 ? '#ef4444' : geographicScore >= 5 ? '#f59e0b' : '#10b981',
-        description: geographicScore >= 7 ? 'Limited geographic exposure' : geographicScore >= 5 ? 'Moderate exposure' : 'Well diversified'
-      },
-      { 
-        category: 'Market Cap Distribution', 
-        score: marketCapScore, 
-        maxScore: 10, 
-        color: marketCapScore >= 7 ? '#ef4444' : marketCapScore >= 5 ? '#f59e0b' : '#10b981',
-        description: marketCapScore >= 7 ? 'Concentrated positions' : marketCapScore >= 5 ? 'Moderate concentration' : 'Well distributed'
-      }
-    ];
-  };
-
-  const riskMetrics = calculateRiskMetrics();
 
   // Calculate dynamic correlation matrix based on portfolio data
   const calculateCorrelationMatrix = () => {
@@ -729,60 +634,7 @@ export function Analytics() {
             </Card>
           </div>
 
-          {/* Risk Analysis */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <AlertTriangle className="w-5 h-5" />
-                <span>Risk Analysis</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {/* Overall Risk Assessment */}
-              <div className="mb-6 p-4 rounded-lg bg-muted/50">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-foreground">Overall Risk Assessment</span>
-                  <span className="text-sm text-muted-foreground">
-                    {(() => {
-                      const avgRisk = riskMetrics.reduce((sum: number, risk: any) => sum + risk.score, 0) / riskMetrics.length;
-                      if (avgRisk >= 7) return 'High Risk Portfolio';
-                      if (avgRisk >= 5) return 'Moderate Risk Portfolio';
-                      return 'Low Risk Portfolio';
-                    })()}
-                  </span>
-                </div>
-                <div className="text-xs text-muted-foreground">
-                  Based on volatility, sector concentration, geographic exposure, and position sizing
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {riskMetrics.map((risk: any, index: number) => (
-                  <div key={index} className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-foreground">{risk.category}</span>
-                      <span className="text-sm text-muted-foreground">{risk.score.toFixed(1)}/10</span>
-                    </div>
-                    <div className="w-full bg-muted rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full transition-all"
-                        style={{ 
-                          width: `${(risk.score / risk.maxScore) * 100}%`,
-                          backgroundColor: risk.color
-                        }}
-                      ></div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {risk.score >= 7 ? 'High Risk' : risk.score >= 4 ? 'Medium Risk' : 'Low Risk'}
-                    </div>
-                    <div className="text-xs text-muted-foreground italic">
-                      {risk.description}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+
 
           {/* Top & Bottom Performers */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

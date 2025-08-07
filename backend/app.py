@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from initialize_portfolio import initialize_portfolio
-from crud import get_portfolio as get_portfolio_items, handle_trade, get_cash_balance, add_funds
+from crud import get_portfolio as get_portfolio_items, handle_trade, get_cash_balance, add_funds, get_connection
 
 import requests_cache
 import yfinance as yf
@@ -155,6 +155,57 @@ def trade():
             "quantity": amount,
             "type": trade_type
         }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/transactions')
+def get_transactions():
+    """Get all portfolio transactions ordered by date (most recent first)."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all transactions ordered by date (most recent first)
+        cursor.execute("""
+            SELECT 
+                pt_id as id,
+                pt_symbol as symbol,
+                pt_name as companyName,
+                pt_sector as sector,
+                pt_industry as industry,
+                pt_quantity as shares,
+                pt_price as price,
+                pt_type as type,
+                pt_date as date,
+                (pt_quantity * pt_price) as totalAmount
+            FROM portfolio_transaction 
+            ORDER BY pt_date DESC, pt_id DESC
+        """)
+        
+        transactions = cursor.fetchall()
+        
+        # Convert to proper format for frontend
+        formatted_transactions = []
+        for transaction in transactions:
+            formatted_transactions.append({
+                "id": transaction['id'],
+                "symbol": transaction['symbol'],
+                "companyName": transaction['companyName'],
+                "sector": transaction['sector'],
+                "industry": transaction['industry'],
+                "shares": transaction['shares'],
+                "price": float(transaction['price']),
+                "type": transaction['type'].lower(),  # Convert BUY/SELL to buy/sell
+                "date": transaction['date'].strftime('%Y-%m-%d') if transaction['date'] else None,
+                "timestamp": transaction['date'].strftime('%Y-%m-%d %H:%M:%S') if transaction['date'] else None,
+                "totalAmount": float(transaction['totalAmount'])
+            })
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify(formatted_transactions), 200
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
