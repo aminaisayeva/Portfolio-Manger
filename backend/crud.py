@@ -364,17 +364,22 @@ def handle_trade(symbol, amount, trade_type, date=None):
                 f"Cannot sell {amount} shares of {symbol}. You only own {total_owned}."
             )
 
-    # Fetch the current price of the stock
+    # Fetch the current price of the stock using real-time data
     try:
-        current_price = round(
-            ticker.history(
-                start=transaction_date,
-                end=(date +
-                     timedelta(days=1)).strftime("%Y-%m-%d"))["Close"].iloc[0],
-            2)
-    except IndexError:
+        # Get current market price
+        current_price = round(ticker.info.get('regularMarketPrice', 0), 2)
+        
+        # Fallback to historical data if current price is not available
+        if current_price == 0:
+            current_price = round(
+                ticker.history(
+                    start=transaction_date,
+                    end=(date +
+                         timedelta(days=1)).strftime("%Y-%m-%d"))["Close"].iloc[0],
+                2)
+    except (IndexError, AttributeError):
         raise ValueError(
-            f"Stock data for {symbol} not available on {transaction_date}. Please check the symbol or date."
+            f"Stock data for {symbol} not available. Please check the symbol."
         )
 
     # Get stock information for the transaction

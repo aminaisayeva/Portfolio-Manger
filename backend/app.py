@@ -36,6 +36,33 @@ def get_market_movers():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/stocks/<symbol>')
+def get_stock_data(symbol):
+    """Get real-time stock data using yfinance."""
+    try:
+        ticker = yf.Ticker(symbol.upper())
+        info = ticker.info
+        
+        # Get current price and previous close
+        current_price = info.get('regularMarketPrice', 0)
+        previous_close = info.get('regularMarketPreviousClose', current_price)
+        change = current_price - previous_close
+        change_percent = (change / previous_close * 100) if previous_close > 0 else 0
+        
+        stock_data = {
+            "symbol": symbol.upper(),
+            "companyName": info.get('longName', symbol.upper()),
+            "price": round(current_price, 2),
+            "change": round(change, 2),
+            "changePercent": round(change_percent, 2),
+            "volume": info.get('volume', 0),
+            "marketCap": info.get('marketCap', 0)
+        }
+        
+        return jsonify(stock_data), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to fetch stock data for {symbol}: {str(e)}"}), 500
+
 @app.route('/api/add-funds', methods=['POST'])
 def add_funds_endpoint():
     """API endpoint to add funds to cash account -   EXACT TRANSACTION LOGIC."""

@@ -309,10 +309,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get stock data
+  // Get stock data - integrates with Flask backend for real-time yfinance data
   app.get("/api/stocks/:symbol", async (req, res) => {
     try {
       const symbol = req.params.symbol.toUpperCase();
+      
+            // First try to fetch from Flask backend for real-time yfinance data
+      try {
+        console.log(`🔍 Attempting to fetch real-time data for ${symbol} from Flask backend...`);
+        
+        // Use a simple fetch without timeout first
+        const response = await fetch(`http://localhost:8000/api/stocks/${symbol}`);
+        
+        if (response.ok) {
+          const stockData = await response.json();
+          console.log(`✅ Real-time data for ${symbol}: $${stockData.price}`);
+          return res.json(stockData);
+        } else {
+          console.log(`❌ Flask backend returned ${response.status} for ${symbol}`);
+        }
+      } catch (flaskError) {
+        console.log(`⚠️ Flask backend error for ${symbol}:`, (flaskError as Error).message);
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      console.log(`🔄 Using fallback data for ${symbol}`);
       const stockData = await stockService.getStockData(symbol);
       
       if (!stockData) {

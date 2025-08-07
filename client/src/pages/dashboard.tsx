@@ -96,7 +96,7 @@ export default function Dashboard() {
           </div>
 
           {/* Portfolio Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
             <Card className="bg-card rounded-xl card-glow-blue border border-border">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
@@ -113,26 +113,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            <Card className="bg-card rounded-xl card-glow-green border border-border">
-              <CardContent className="p-6">
-                <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${(portfolioSummary.totalGain || 0) >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-                    {(portfolioSummary.totalGain || 0) >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-400" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-400" />
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Gain/Loss</p>
-                    <p className={`text-2xl font-bold ${(portfolioSummary.totalGain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      ${(portfolioSummary.totalGain || 0) >= 0 ? '+' : ''}
-                      {portfolioSummary.totalGain ? portfolioSummary.totalGain.toFixed(2) : "0.00"}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
 
             <Card className="bg-card rounded-xl card-glow-purple border border-border">
               <CardContent className="p-6">
