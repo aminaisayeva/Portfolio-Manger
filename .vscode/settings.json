@@ -13,5 +13,8 @@
             "username": "root",
             "database": "portfolio"
         }
+    ],
+    "python.analysis.extraPaths": [
+        "./backend"
     ]
 }
