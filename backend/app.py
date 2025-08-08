@@ -94,6 +94,7 @@ def get_stock_data(symbol):
         change = current_price - previous_close
         change_percent = (change / previous_close * 100) if previous_close > 0 else 0
         
+        
         stock_data = {
             "symbol": symbol.upper(),
             "companyName": info.get('longName', symbol.upper()),
@@ -101,7 +102,10 @@ def get_stock_data(symbol):
             "change": round(change, 2),
             "changePercent": round(change_percent, 2),
             "volume": info.get('volume', 0),
-            "marketCap": info.get('marketCap', 0)
+            "marketCap": info.get('marketCap', 0),
+            "previousClose": info.get('regularMarketPreviousClose', 0),
+            "dayLow": info.get("regularMarketDayLow", 0),
+            "dayHigh": info.get("regularMarketDayHigh", 0)
         }
         
         return jsonify(stock_data), 200

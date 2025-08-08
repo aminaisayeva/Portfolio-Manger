@@ -54,6 +54,10 @@ export function Trading() {
       return response.json();
     }
   });
+  const closeModal = () => {
+    setSelectedStock(null);
+    setModalType(null);
+  };
 
   const { data: portfolio } = useQuery({
     queryKey: ['/api/portfolio'],
@@ -96,54 +100,6 @@ export function Trading() {
     }
   };
 
-  // Buy stock function
-  const handleBuyStock = async () => {
-    if (!selectedStockForBuy || buyQuantity <= 0) return;
-
-    try {
-      const response = await fetch('/api/trade', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          symbol: selectedStockForBuy.symbol,
-          quantity: buyQuantity
-        }),
-      });
-              console.log("Response status:", response.status);
-        console.log("Response ok:", response.ok);
-        console.log("Response headers:", response.headers);
-        
-        if (response.ok) {
-          console.log("Response is ok, trying to parse JSON...");
-          const responseText = await response.text();
-          console.log("Response text:", responseText);
-          
-          let result;
-          try {
-            result = JSON.parse(responseText);
-            console.log("Parsed result:", result);
-          } catch (parseError) {
-            console.error("JSON parse error:", parseError);
-            alert('Error parsing response from server');
-            return;
-          }
-        alert(`Successfully bought ${buyQuantity} shares of ${selectedStockForBuy.symbol}`);
-        setShowBuyModal(false);
-        setSelectedStockForBuy(null);
-        setBuyQuantity(1);
-        // Refresh the page to update portfolio data
-        window.location.reload();
-      } else {
-        const error = await response.json();
-        alert(`Error: ${error.error || 'Failed to buy stock'}`);
-      }
-    } catch (error) {
-      console.error('Error buying stock:', error);
-      alert('Error buying stock. Please try again.');
-    }
-  };
 
   const filteredTransactions = transactions.filter((transaction: Transaction) => {
     const matchesSearch = transaction.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -411,15 +367,23 @@ export function Trading() {
                          </div>
                          <div className="flex items-center space-x-2">
                            <Button 
-                             size="sm" 
-                             className="gradient-green text-white"
-                             onClick={() => {
-                               setSelectedStockForBuy(stock);
-                               setShowBuyModal(true);
-                             }}
-                           >
-                             Buy
-                           </Button>
+                              size="sm" 
+                              className="gradient-green text-white"
+                              onClick={() => {
+                                console.log("Stock Data Final:", stockDataFinal);
+                                if (stockDataFinal) {
+                                  console.log("Stock Data Final please work:", stockDataFinal);
+                                  openBuyModal({
+                                    symbol: stockDataFinal.symbol,
+                                    price: stockDataFinal.price || 0,
+                                    companyName: stockDataFinal.companyName
+                                  });
+                                }
+                                console.log("I did a good job");
+                              }}
+                            >
+                    Buy
+                  </Button>
                          </div>
                       </div>
                       <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
@@ -682,28 +646,13 @@ export function Trading() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Quantity</label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={buyQuantity}
-                  onChange={(e) => setBuyQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="bg-background border-border text-foreground"
-                />
-              </div>
+              
+              
 
               <div className="p-4 rounded-lg bg-muted/50">
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Price per share:</span>
-                  <span className="text-foreground">${selectedStockForBuy.price?.toFixed(2) || '0.00'}</span>
-                </div>
-                <div className="flex justify-between text-sm mb-2">
-                  <span className="text-muted-foreground">Quantity:</span>
-                  <span className="text-foreground">{buyQuantity}</span>
-                </div>
+                
                 <div className="flex justify-between text-lg font-bold border-t border-border pt-2">
-                  <span className="text-foreground">Total:</span>
+                  <span className="text-foreground">Share price:</span>
                   <span className="text-foreground">${((selectedStockForBuy.price || 0) * buyQuantity).toFixed(2)}</span>
                 </div>
               </div>
@@ -711,7 +660,7 @@ export function Trading() {
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 bg-black text-white border-black hover:bg-red-600 hover:text-white hover:border-red-600 transition-colors duration-200 font-semibold"
                   onClick={() => {
                     setShowBuyModal(false);
                     setSelectedStockForBuy(null);
@@ -720,28 +669,19 @@ export function Trading() {
                 >
                   Cancel
                 </Button>
-                <Button 
-                              size="sm" 
-                              className="gradient-green text-white"
-                              onClick={() => {
-                                console.log("Stock Data Final:", stockDataFinal);
-                                if (stockDataFinal) {
-                                  console.log("Stock Data Final please work:", stockDataFinal);
-                                  openBuyModal({
-                                    symbol: stockDataFinal.symbol,
-                                    price: stockDataFinal.price || 0,
-                                    companyName: stockDataFinal.companyName
-                                  });
-                                }
-                                console.log("I did a good job");
-                              }}
-                            >
-                    Buy
-                  </Button>
+                
               </div>
             </div>
           </div>
         </div>
+      )}
+      {selectedStock && modalType && (
+        <BuySellModal
+          isOpen={!!selectedStock}
+          onClose={closeModal}
+          selectedStock={selectedStock}
+          modalType={modalType}
+        />
       )}
 
       <FloatingAIChat />
