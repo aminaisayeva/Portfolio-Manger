@@ -1,174 +1,273 @@
-# Portfolio Management Platform
+# ThemisTrends - Portfolio Management System
 
-A comprehensive stock portfolio management platform with real-time market data, AI-powered insights, and professional trading capabilities.
+A comprehensive portfolio management and trading platform built with React, TypeScript, and Flask. ThemisTrends provides real-time market data, portfolio tracking, trading capabilities, and advanced analytics.
 
-## 🏗️ Architecture Overview
+## 🚀 Features
 
-This application uses a modern full-stack architecture with three main components:
+### Core Functionality
+- **Portfolio Management**: Track holdings, gains/losses, and portfolio performance
+- **Real-time Trading**: Buy and sell stocks with live market data
+- **Market Data**: Real-time stock prices, market indices, and economic indicators
+- **Advanced Analytics**: Performance metrics, sector allocation, and correlation analysis
+- **Transaction History**: Complete trading history with filtering and pagination
 
-### 1. **React Frontend** (Port 5000)
-- **Framework**: React with TypeScript, Vite build tool
-- **UI**: Shadcn/ui components with dark theme design
-- **State**: TanStack Query for server state management
-- **Features**: Dashboard, Portfolio view, Trading center, Analytics, AI chatbot
+### Key Features
+- **Real-time Data**: Live stock prices via yfinance API
+- **Portfolio Analytics**: Sharpe ratio, beta, volatility, and alpha calculations
+- **Market Overview**: S&P 500, NASDAQ, Dow Jones, and Russell 2000 tracking
+- **Economic Indicators**: Treasury yields, commodities, and currency data
+- **Sector Performance**: Real-time sector ETF performance tracking
+- **Responsive Design**: Mobile-friendly interface with modern UI
 
-### 2. **Flask Backend** (Port 8080)
-- **Framework**: Python Flask with CORS enabled
-- **Data**: MySQL integration using yfinance for real stock prices
-- **APIs**: Portfolio data (`/api/portfolio`) and trading (`/api/trade`)
-- **Functions**:   original `get_portfolio()` and `handle_trade()` code
-
-### 3. **MySQL Database**
-- **Schema**: Complete portfolio management tables with triggers
-- **Tables**: `portfolio_item`, `portfolio_transaction`, `cash_account`, `stock_price_history`
-- **Features**: Automatic portfolio recalculation, trade validation, daily snapshots
-
-## 🔄 Component Interactions
+## 🏗️ Project Structure
 
 ```
-┌─────────────────┐    HTTP API     ┌─────────────────┐    MySQL      ┌─────────────────┐
-│                 │   (Port 8080)   │                 │  Queries      │                 │
-│  React Frontend ├────────────────►│  Flask Backend  ├──────────────►│ MySQL Database  │
-│   (Port 5000)   │                 │   (Port 8080)   │               │                 │
-│                 │◄────────────────┤                 │◄──────────────┤                 │
-└─────────────────┘   JSON Data     └─────────────────┘   Real Data   └─────────────────┘
+portfolio_manager_team15/
+├── client/                          # Frontend React application
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── portfolio/           # Portfolio-specific components
+│   │   │   └── ui/                  # Reusable UI components
+│   │   ├── pages/                   # Main application pages
+│   │   ├── hooks/                   # Custom React hooks
+│   │   └── lib/                     # Utility functions
+│   ├── package.json
+│   └── vite.config.ts
+├── backend/                         # Flask API server
+│   ├── app.py                       # Main Flask application
+│   ├── crud.py                      # Database operations
+│   ├── math_operations.py           # Financial calculations
+│   ├── requirements.txt
+│   └── db/                          # Database schema and data
+├── server/                          # Additional server components
+└── shared/                          # Shared TypeScript types
 ```
 
-### Data Flow:
-1. **Frontend** makes API calls every 30 seconds to `/api/portfolio`
-2. **Flask Backend** calls   `get_portfolio()` function
-3. **Database** queries execute with real-time yfinance stock prices
-4. **JSON Response** flows back through Flask to React components
-5. **Trading** follows the same pattern through `/api/trade` endpoint
+## 🛠️ Technology Stack
 
-## 🚀 Quick Start Guide
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for build tooling
+- **TanStack Query** for data fetching
+- **Recharts** for data visualization
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
 
-### Prerequisites
-- Node.js (for React frontend)
-- Python 3.8+ (for Flask backend)
-- MySQL Server running locally
-- MySQL root access with password
+### Backend
+- **Flask** Python web framework
+- **MySQL** database
+- **yfinance** for market data
+- **requests-cache** for API caching
 
-### 1. Setup Database
+### Database
+- **MySQL** with custom schema
+- Portfolio items, transactions, and cash balance tracking
+
+## 📋 Prerequisites
+
+Before running this project, ensure you have:
+
+- **Node.js** (v16 or higher)
+- **Python** (v3.8 or higher)
+- **MySQL** database server
+- **Git**
+
+## 🚀 Installation & Setup
+
+### 1. Clone the Repository
 ```bash
-# Start MySQL service
-sudo service mysql start
-
-# Create database and tables
-mysql -u root -p 
-
-source C:/.../master.sql
-
+git clone <repository-url>
+cd portfolio_manager_team15
 ```
 
-### 2. Setup Flask Backend
+### 2. Backend Setup
+
+#### Install Python Dependencies
 ```bash
 cd backend
-
-# Install Python dependencies
 pip install -r requirements.txt
+```
 
-# Configure environment (make the file yourself if needed)
-cp .env
-# Edit .env and add: DB_PASSWORD= _mysql_password
+#### Database Setup
+1. Create a MySQL database named `portfolio_manager`
+2. Set up your database credentials in a `.env` file:
+```env
+DB_PASSWORD=your_mysql_password
+```
 
-# Start Flask server
+3. Initialize the database:
+```bash
+# Run the database initialization scripts
+mysql -u root -p portfolio_manager < db/master.sql
+```
+
+#### Start the Flask Server
+```bash
 python app.py
 ```
-✅ **Backend will be running on**: `http://localhost:8080`
+The backend will run on `http://localhost:8000`
 
-### 3. Setup React Frontend
+### 3. Frontend Setup
+
+#### Install Dependencies
 ```bash
-# Install Node.js dependencies (from root directory)
 npm install
+```
 
-# Start React development server
+#### Start the Development Server
+```bash
 npm run dev
 ```
-✅ **Frontend will be running on**: `http://localhost:5000`
+The frontend will run on `http://localhost:5000`
 
-## 📊 Features & Functionality
+## 📊 Database Schema
+
+### Key Tables
+- **portfolio_item**: Current holdings with prices and quantities
+- **portfolio_transaction**: Complete transaction history
+- **cash_account**: Cash balance management
+- **portfolio_history**: Historical portfolio values
+
+### Sample Data
+The system comes pre-loaded with:
+- Initial $25,000 cash balance
+- Sample stock holdings (AAPL, AMZN, GOOGL, etc.)
+- Historical transaction data
+
+## 🎯 Usage Guide
 
 ### Dashboard
-- Real-time portfolio value and profit/loss tracking
-- Market overview with trending stocks and indices
-- Portfolio performance history with interactive charts
-- Best performing stock highlights
+- **Portfolio Overview**: Total value, gains/losses, cash balance
+- **Performance Metrics**: Realized and unrealized gains
+- **Portfolio Chart**: Historical performance visualization
+- **Quick Actions**: Buy/sell stocks, add funds
 
-### Portfolio Management
-- Complete holdings view with current market prices
-- Cost basis and weighted average price calculations
-- Individual stock performance metrics
-- Asset allocation visualization
+### Portfolio Page
+- **Holdings List**: All current positions with real-time prices
+- **Search & Filter**: Find specific holdings
+- **Sort Options**: Sort by value, gain/loss, shares, or symbol
+- **Pagination**: View 10 holdings per page
+- **Trading Actions**: Buy or sell directly from holdings
 
 ### Trading Center
-- Buy/sell stock functionality
-- Real-time price fetching using yfinance
-- Trade validation (insufficient funds/shares prevention)
-- Transaction history tracking
+- **Transaction History**: Complete buy/sell history
+- **Trading Metrics**: Capital deployed, realized gains, activity stats
+- **Filtering**: Search by symbol, filter by transaction type and date
+- **Pagination**: Navigate through transaction history
 
-### Analytics Dashboard
-- Portfolio performance metrics and trends
-- Profit/loss analysis over time
-- Monthly growth rate calculations
-- Historical value tracking with 90-day charts
+### Analytics
+- **Performance Metrics**: Total return, Sharpe ratio, portfolio beta, volatility, alpha
+- **Sector Allocation**: Visual breakdown of portfolio by sector
+- **Correlation Matrix**: Asset correlation analysis
+- **Timeframe Selection**: 1M, 3M, 6M, 1Y, or all-time analysis
 
-### AI Financial Advisor
-- Contextual portfolio insights using OpenAI GPT-4o
-- Personalized investment recommendations
-- Chat interface with conversation history
-- Real-time market analysis integration
+### Market Page
+- **Market Indices**: S&P 500, NASDAQ, Dow Jones, Russell 2000
+- **Market Performance**: Intraday performance charts
+- **Economic Indicators**: Treasury yields, commodities, currency data
+- **Sector Performance**: Real-time sector ETF tracking
 
-## 🔧 Technical Details
+## 🔧 API Endpoints
 
-### Database Schema
-  original MySQL schema includes:
-- **Automatic triggers** for portfolio recalculation after trades
-- **Stored procedures** for daily snapshots and holdings updates
-- **Foreign key constraints** ensuring data integrity
-- **Overdraft/oversell protection** built into the database layer
+### Portfolio Management
+- `GET /api/portfolio` - Get portfolio data and holdings
+- `POST /api/add-funds` - Add funds to cash account
+- `POST /api/buy-stock` - Buy stock shares
+- `POST /api/sell-stock` - Sell stock shares
 
-### API Endpoints
-- `GET /api/portfolio` - Returns complete portfolio data
-- `POST /api/trade` - Processes buy/sell transactions
-- `POST /api/add-funds` - Adds funds to the cash balance
-- `GET /api/market` - Market data and trending stocks
-- `POST /api/ai/chat` - AI advisor interactions
+### Market Data
+- `GET /api/market_movers` - Major market indices
+- `GET /api/stocks/<symbol>` - Individual stock data
+- `GET /api/market_performance` - Intraday performance
+- `GET /api/sector_performance` - Sector ETF data
+- `GET /api/economic_indicators` - Economic indicators
 
-### Real-time Data
-- **Stock prices** fetched live using yfinance Python library
-- **Market data** updates every 30 seconds automatically
-- **Portfolio values** calculated with current market prices
-- **Trade execution** uses real-time prices for accuracy
+### Transactions
+- `GET /api/transactions` - Transaction history
 
-## 🛠️ Development Notes
+## 🎨 UI Components
 
-### File Structure
-```
-portfolio-manager/
-├── README.md                 # This file
-├── backend/                  # Flask backend with   original code
-│   ├── app.py               #   get_portfolio() and handle_trade()
-│   ├── schema.sql           #   database tables and triggers
-│   └── sample_data.sql      #   sample portfolio data
-├── client/                   # React frontend
-│   └── src/pages/           # Dashboard, Portfolio, Trading, Analytics
-├── server/                   # Node.js middleware layer
-└── package.json             # Frontend dependencies
-```
+### Reusable Components
+- **Navigation**: Header with logo and navigation links
+- **Cards**: Consistent card layouts for data display
+- **Charts**: Line charts, bar charts, pie charts for analytics
+- **Modals**: Buy/sell modals, add funds modal
+- **Tables**: Sortable data tables with pagination
 
-### Environment Variables
-- **Backend**: `DB_PASSWORD` in `backend/.env`
-- **Frontend**: Automatically configured for localhost development
-- **Ports**: Frontend (5000), Backend (8080), MySQL (3306)
+### Styling
+- **Tailwind CSS**: Utility-first CSS framework
+- **Custom Gradients**: Purple and green gradient themes
+- **Responsive Design**: Mobile-first approach
+- **Dark Mode**: Built-in dark theme support
 
-## 🎯 Integration Success
+## 🔄 Data Flow
 
-  existing Flask functions work exactly as provided:
-- ✅ `get_portfolio()` returns real portfolio data
-- ✅ `handle_trade()` processes actual buy/sell transactions  
-- ✅ MySQL schema preserved with all triggers and procedures
-- ✅ yfinance integration provides live stock prices
-- ✅ No modifications to   original SQL files or core logic
+1. **Real-time Updates**: yfinance API provides live market data
+2. **Caching**: requests-cache reduces API calls and improves performance
+3. **State Management**: TanStack Query handles server state and caching
+4. **Database**: MySQL stores portfolio data and transaction history
+5. **Calculations**: Backend handles complex financial calculations
 
-The React frontend displays   actual portfolio data (currently showing values around $22,900+) and all trading operations go through   existing MySQL database with real market prices.
+## 🚨 Error Handling
+
+- **API Failures**: Graceful fallbacks for market data
+- **Database Errors**: Proper error messages and logging
+- **Network Issues**: Retry mechanisms and offline indicators
+- **Invalid Data**: Input validation and error boundaries
+
+## 🔒 Security Considerations
+
+- **Input Validation**: All user inputs are validated
+- **SQL Injection Prevention**: Parameterized queries
+- **CORS Configuration**: Proper cross-origin resource sharing
+- **Environment Variables**: Sensitive data stored in .env files
+
+## 📈 Performance Optimizations
+
+- **API Caching**: 24-hour cache for market data
+- **Pagination**: Large datasets split into manageable chunks
+- **Lazy Loading**: Components loaded on demand
+- **Image Optimization**: Optimized icons and assets
+
+## 🧪 Testing
+
+### Manual Testing Checklist
+- [ ] Portfolio data loads correctly
+- [ ] Buy/sell transactions work
+- [ ] Market data updates in real-time
+- [ ] Analytics calculations are accurate
+- [ ] Mobile responsiveness
+- [ ] Error handling works properly
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Backend won't start:**
+- Check MySQL connection and credentials
+- Ensure all Python dependencies are installed
+- Verify .env file exists with correct database password
+
+**Frontend won't load:**
+- Check if backend is running on port 8000
+- Verify all npm dependencies are installed
+- Check browser console for errors
+
+**Market data not updating:**
+- Check yfinance API status
+- Verify internet connection
+- Check cache settings in backend
+
+**Database errors:**
+- Ensure MySQL server is running
+- Verify database schema is properly initialized
+- Check database user permissions
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
