@@ -9,7 +9,16 @@ import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
 import { TrendingUp, TrendingDown, Search, Filter, Calendar, DollarSign, BarChart3, Clock, X } from "lucide-react";
 import { format } from "date-fns";
-
+import { BuySellModal } from "@/components/portfolio/buy-sell-modal";
+interface StockData {
+  symbol: string;
+  companyName: string;
+  price: number;
+  change: number;
+  changePercent: number;
+  volume: number;
+  marketCap: number;
+}
 interface Transaction {
   id: number;
   symbol: string;
@@ -36,6 +45,7 @@ export function Trading() {
   const [selectedStockForBuy, setSelectedStockForBuy] = useState<any>(null);
   const [buyQuantity, setBuyQuantity] = useState(1);
   const [showBuyModal, setShowBuyModal] = useState(false);
+  const [stockDataFinal, setStockDataFinal] = useState<StockData | null>(null);
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['/api/transactions'],
@@ -53,6 +63,10 @@ export function Trading() {
     }
   });
 
+ 
+  
+  let stockDataFinalTrial = {}
+  
   // Stock search function
   const searchStocks = async (symbol: string) => {
     if (!symbol.trim()) {
@@ -65,6 +79,11 @@ export function Trading() {
       const response = await fetch(`/api/stocks/${symbol.trim().toUpperCase()}`);
       if (response.ok) {
         const stockData = await response.json();
+        console.log("Stock data:", stockData);
+        setStockDataFinal(stockData);
+        stockDataFinalTrial = stockData;
+        console.log("Stock Data Final:", stockDataFinal)
+        console.log("Stock Data Final Trial:", stockDataFinalTrial)
         setStockSearchResults([stockData]);
       } else {
         setStockSearchResults([]);
@@ -82,7 +101,7 @@ export function Trading() {
     if (!selectedStockForBuy || buyQuantity <= 0) return;
 
     try {
-      const response = await fetch('/api/buy-stock', {
+      const response = await fetch('/api/trade', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,6 +209,15 @@ export function Trading() {
   const startIndex = (currentPage - 1) * transactionsPerPage;
   const endIndex = startIndex + transactionsPerPage;
   const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+
+
+  const [selectedStock, setSelectedStock] = useState<{symbol: string, price: number, companyName: string} | null>(null);
+  const [modalType, setModalType] = useState<"buy" | "sell" | null>(null);
+
+  const openBuyModal = (stock: {symbol: string, price: number, companyName: string}) => {
+    setSelectedStock(stock);
+    setModalType("buy");
+  };
 
   // Reset to first page when filters change
   useEffect(() => {
@@ -692,12 +720,24 @@ export function Trading() {
                 >
                   Cancel
                 </Button>
-                <Button
-                  className="flex-1 gradient-green text-white"
-                  onClick={handleBuyStock}
-                >
-                  Buy {buyQuantity} Share{buyQuantity > 1 ? 's' : ''}
-                </Button>
+                <Button 
+                              size="sm" 
+                              className="gradient-green text-white"
+                              onClick={() => {
+                                console.log("Stock Data Final:", stockDataFinal);
+                                if (stockDataFinal) {
+                                  console.log("Stock Data Final please work:", stockDataFinal);
+                                  openBuyModal({
+                                    symbol: stockDataFinal.symbol,
+                                    price: stockDataFinal.price || 0,
+                                    companyName: stockDataFinal.companyName
+                                  });
+                                }
+                                console.log("I did a good job");
+                              }}
+                            >
+                    Buy
+                  </Button>
               </div>
             </div>
           </div>
