@@ -7,56 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
-import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { MarketClock } from "@/components/ui/market-clock";
+import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { TrendingUp, TrendingDown, Search, Globe, DollarSign, Activity, Calendar, Clock, AlertCircle, Eye, BarChart3 } from "lucide-react";
 
-// Market indices data
-const marketIndices = [
-  {
-    name: 'S&P 500',
-    symbol: 'SPX',
-    value: 4567.89,
-    change: 23.45,
-    changePercent: 0.52,
-    volume: '3.2B'
-  },
-  {
-    name: 'NASDAQ',
-    symbol: 'IXIC',
-    value: 14234.56,
-    change: -45.67,
-    changePercent: -0.32,
-    volume: '4.1B'
-  },
-  {
-    name: 'Dow Jones',
-    symbol: 'DJI',
-    value: 34567.12,
-    change: 156.78,
-    changePercent: 0.45,
-    volume: '2.8B'
-  },
-  {
-    name: 'Russell 2000',
-    symbol: 'RUT',
-    value: 1987.45,
-    change: -12.34,
-    changePercent: -0.62,
-    volume: '1.5B'
-  }
-];
 
-// Market sectors performance
-const sectorPerformance = [
-  { name: 'Technology', change: 2.1, volume: '12.5B', top: 'NVDA', topChange: 3.4 },
-  { name: 'Healthcare', change: 1.3, volume: '8.2B', top: 'JNJ', topChange: 2.1 },
-  { name: 'Finance', change: -0.8, volume: '15.3B', top: 'JPM', topChange: -0.5 },
-  { name: 'Energy', change: 3.2, volume: '9.7B', top: 'XOM', topChange: 4.1 },
-  { name: 'Consumer Discretionary', change: 0.5, volume: '11.1B', top: 'AMZN', topChange: 1.2 },
-  { name: 'Consumer Staples', change: -0.2, volume: '6.8B', top: 'PG', topChange: 0.1 },
-  { name: 'Industrials', change: 1.7, volume: '7.9B', top: 'BA', topChange: 2.8 },
-  { name: 'Materials', change: 2.4, volume: '5.5B', top: 'FCX', topChange: 3.6 }
-];
 
 // Most active stocks
 const mostActiveStocks = [
@@ -117,15 +72,7 @@ const marketNews = [
   }
 ];
 
-// Economic indicators
-const economicIndicators = [
-  { name: 'Fed Funds Rate', value: '5.25%', change: 0, trend: 'neutral' },
-  { name: '10-Year Treasury', value: '4.32%', change: -0.05, trend: 'down' },
-  { name: 'VIX (Volatility)', value: '18.45', change: 1.23, trend: 'up' },
-  { name: 'USD Index', value: '103.45', change: 0.34, trend: 'up' },
-  { name: 'Gold', value: '$2,034', change: -12.45, trend: 'down' },
-  { name: 'Oil (WTI)', value: '$82.34', change: 2.67, trend: 'up' }
-];
+// Economic indicators - now fetched from API
 
 // Chart data for market overview
 const marketChartData = [
@@ -150,6 +97,82 @@ export function Market() {
     refetchInterval: 30000
   });
 
+  const { data: performanceData, isLoading: performanceLoading } = useQuery({
+    queryKey: ['/api/market-performance'],
+    refetchInterval: 60000 // Refresh every minute for intraday data
+  });
+
+  const { data: economicData, isLoading: economicLoading } = useQuery({
+    queryKey: ['/api/economic-indicators'],
+    refetchInterval: 300000 // Refresh every 5 minutes for economic data
+  });
+
+  const { data: sectorData, isLoading: sectorLoading } = useQuery({
+    queryKey: ['/api/sector-performance'],
+    refetchInterval: 120000 // Refresh every 2 minutes for sector data
+  });
+
+  // Get market indices from API data
+  const marketIndices = (marketData as any)?.marketIndices || [];
+
+  // Get economic indicators from API data
+  const economicIndicators = economicData ? Object.entries(economicData).map(([name, data]: [string, any]) => ({
+    name,
+    value: data.value,
+    change: data.change,
+    trend: data.trend
+  })) : [];
+
+  // Process performance data for chart
+  const getChartData = () => {
+    if (!performanceData) return [];
+    
+    const indices = ["S&P 500", "NASDAQ", "Dow Jones", "Russell 2000"];
+    const chartData: any[] = [];
+    
+    // Find the index with the most data points to use as our time reference
+    let referenceIndex = null;
+    let maxDataPoints = 0;
+    
+    indices.forEach(indexName => {
+      const indexData = (performanceData as any)[indexName];
+      if (indexData?.data && indexData.data.length > maxDataPoints) {
+        maxDataPoints = indexData.data.length;
+        referenceIndex = indexName;
+      }
+    });
+    
+    if (!referenceIndex) return [];
+    
+    // Use the reference index's time points
+    const referenceData = (performanceData as any)[referenceIndex];
+    const timePoints = referenceData.data.map((point: any) => point.time).sort();
+    
+    // Create chart data points with percentage changes
+    timePoints.forEach((time: string) => {
+      const dataPoint: any = { 
+        time,
+        baseline: 0 // Add baseline at 0% for opening level
+      };
+      
+      indices.forEach(indexName => {
+        const indexData = (performanceData as any)[indexName];
+        if (indexData?.data && indexData.open_value > 0) {
+          const point = indexData.data.find((p: any) => p.time === time);
+          if (point) {
+            // Calculate percentage change from opening price
+            const percentageChange = ((point.value - indexData.open_value) / indexData.open_value) * 100;
+            dataPoint[indexName] = percentageChange;
+          }
+        }
+      });
+      
+      chartData.push(dataPoint);
+    });
+    
+    return chartData;
+  };
+
   const filteredStocks = mostActiveStocks.filter(stock =>
     stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
     stock.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -171,6 +194,14 @@ export function Market() {
     );
   }
 
+  const chartData = getChartData();
+  const colors = {
+    "S&P 500": "#8b5cf6",
+    "NASDAQ": "#06b6d4", 
+    "Dow Jones": "#10b981",
+    "Russell 2000": "#f59e0b"
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -182,17 +213,14 @@ export function Market() {
               <h1 className="text-4xl font-bold text-foreground">Market Overview</h1>
               <p className="text-xl text-muted-foreground mt-2">Real-time market data and insights</p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="text-green-400 border-green-400">
-                <div className="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
-                Market Open
-              </Badge>
-            </div>
           </div>
+
+          {/* Market Clock */}
+          <MarketClock />
 
           {/* Market Indices */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {marketIndices.map((index, i) => (
+            {marketIndices.map((index: any, i: number) => (
               <Card key={i} className="bg-card border-border hover:border-blue-500/30 transition-all">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
@@ -216,7 +244,7 @@ export function Market() {
                       {index.change >= 0 ? '+' : ''}{index.change} ({index.changePercent >= 0 ? '+' : ''}{index.changePercent}%)
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      Vol: {index.volume}
+                      Vol: {index.volume ? (index.volume / 1000000).toFixed(1) + 'M' : 'N/A'}
                     </div>
                   </div>
                 </CardContent>
@@ -224,54 +252,82 @@ export function Market() {
             ))}
           </div>
 
-          {/* Market Chart */}
+          {/* Market Performance Chart */}
           <Card className="bg-card border-border">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
-                <span>Market Performance Today</span>
+                <span>Market Performance Today (% Change)</span>
+                {performanceLoading && (
+                  <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={marketChartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
-                    <XAxis 
-                      dataKey="time"
-                      tick={{ fill: '#94a3b8', fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis 
-                      tick={{ fill: '#94a3b8', fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip 
-                      contentStyle={{
-                        backgroundColor: 'hsl(var(--card))',
-                        border: '1px solid hsl(var(--border))',
-                        borderRadius: '8px'
-                      }}
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="spy" 
-                      stroke="#8b5cf6" 
-                      fill="rgba(139, 92, 246, 0.1)"
-                      name="SPY ETF"
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="qqq" 
-                      stroke="#06b6d4" 
-                      fill="rgba(6, 182, 212, 0.1)"
-                      name="QQQ ETF"
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
+              {chartData.length > 0 ? (
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.1)" />
+                      <XAxis 
+                        dataKey="time"
+                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                      />
+                      <YAxis 
+                        tick={{ fill: '#94a3b8', fontSize: 12 }}
+                        axisLine={false}
+                        tickLine={false}
+                        tickFormatter={(value) => `${value.toFixed(2)}%`}
+                      />
+                      <Tooltip 
+                        contentStyle={{
+                          backgroundColor: 'hsl(var(--card))',
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                        formatter={(value: any, name: string) => [
+                          `${value.toFixed(2)}%`,
+                          name
+                        ]}
+                        labelFormatter={(label) => `Time: ${label}`}
+                      />
+                      {/* Baseline at 0% */}
+                      <Line
+                        type="monotone"
+                        dataKey="baseline"
+                        stroke="rgba(148, 163, 184, 0.3)"
+                        strokeWidth={1}
+                        strokeDasharray="5 5"
+                        dot={false}
+                        activeDot={false}
+                        name="Opening Level"
+                      />
+                      <Legend />
+                      {Object.keys(colors).map((indexName) => (
+                        <Line
+                          key={indexName}
+                          type="monotone"
+                          dataKey={indexName}
+                          stroke={colors[indexName as keyof typeof colors]}
+                          strokeWidth={2}
+                          dot={false}
+                          activeDot={{ r: 4, strokeWidth: 0 }}
+                          connectNulls={true}
+                        />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-80 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading performance data...</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -281,34 +337,46 @@ export function Market() {
               <CardTitle className="flex items-center space-x-2">
                 <Globe className="w-5 h-5" />
                 <span>Economic Indicators</span>
+                {economicLoading && (
+                  <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {economicIndicators.map((indicator, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background">
-                    <div>
-                      <div className="font-medium text-foreground">{indicator.name}</div>
-                      <div className="text-2xl font-bold text-foreground">{indicator.value}</div>
+              {economicIndicators.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {economicIndicators.map((indicator, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background">
+                      <div>
+                        <div className="font-medium text-foreground">{indicator.name}</div>
+                        <div className="text-2xl font-bold text-foreground">{indicator.value}</div>
+                      </div>
+                      <div className={`flex items-center text-sm ${
+                        indicator.trend === 'up' ? 'text-green-400' :
+                        indicator.trend === 'down' ? 'text-red-400' : 'text-muted-foreground'
+                      }`}>
+                        {indicator.trend === 'up' ? (
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                        ) : indicator.trend === 'down' ? (
+                          <TrendingDown className="w-4 h-4 mr-1" />
+                        ) : (
+                          <div className="w-4 h-4 mr-1"></div>
+                        )}
+                        {indicator.change !== 0 && (
+                          <span>{indicator.change > 0 ? '+' : ''}{indicator.change}</span>
+                        )}
+                      </div>
                     </div>
-                    <div className={`flex items-center text-sm ${
-                      indicator.trend === 'up' ? 'text-green-400' :
-                      indicator.trend === 'down' ? 'text-red-400' : 'text-muted-foreground'
-                    }`}>
-                      {indicator.trend === 'up' ? (
-                        <TrendingUp className="w-4 h-4 mr-1" />
-                      ) : indicator.trend === 'down' ? (
-                        <TrendingDown className="w-4 h-4 mr-1" />
-                      ) : (
-                        <div className="w-4 h-4 mr-1"></div>
-                      )}
-                      {indicator.change !== 0 && (
-                        <span>{indicator.change > 0 ? '+' : ''}{indicator.change}</span>
-                      )}
-                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading economic indicators...</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -318,31 +386,53 @@ export function Market() {
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="w-5 h-5" />
                 <span>Sector Performance</span>
+                {sectorLoading && (
+                  <div className="animate-spin w-4 h-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {sectorPerformance.map((sector, index) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors">
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">{sector.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Volume: {sector.volume} • Top: {sector.top} ({sector.topChange > 0 ? '+' : ''}{sector.topChange}%)
+              {(sectorData as any[]) && (sectorData as any[]).length > 0 ? (
+                <div className="space-y-4">
+                  {(sectorData as any[]).map((sector: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors">
+                      <div className="flex-1">
+                        <div className="font-medium text-foreground">{sector.name}</div>
+                        <div className="text-sm text-muted-foreground">
+                          Volume: {sector.volume} • {sector.top} ({sector.topChange > 0 ? '+' : ''}{sector.topChange}%)
+                        </div>
+                      </div>
+                      <div className={`text-right ${sector.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className="flex items-center">
+                          {sector.change >= 0 ? (
+                            <TrendingUp className="w-4 h-4 mr-1" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4 mr-1" />
+                          )}
+                          <span className="font-semibold">{sector.change > 0 ? '+' : ''}{sector.change}%</span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {sector.symbol || 'ETF'}
+                        </div>
                       </div>
                     </div>
-                    <div className={`text-right ${sector.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      <div className="flex items-center">
-                        {sector.change >= 0 ? (
-                          <TrendingUp className="w-4 h-4 mr-1" />
-                        ) : (
-                          <TrendingDown className="w-4 h-4 mr-1" />
-                        )}
-                        <span className="font-semibold">{sector.change > 0 ? '+' : ''}{sector.change}%</span>
-                      </div>
-                    </div>
+                  ))}
+                </div>
+              ) : sectorLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <div className="animate-spin w-8 h-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading sector performance data...</p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-center">
+                    <AlertCircle className="w-8 h-8 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">Unable to load sector performance data</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

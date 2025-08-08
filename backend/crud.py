@@ -223,12 +223,12 @@ def get_portfolio(orderBy, numEntries=None):
     """Fetch the portfolio items from the database."""
     conn = get_connection()
     if conn is None:
-        print("Database not available, returning fallback portfolio data")
         # Return fallback data when database is not available
         cash_balance = get_cash_balance()
         return {
             "totalValue": cash_balance + 12000,  # Mock portfolio value
             "profitLoss": 500,  # Mock profit/loss
+            "unrealizedGains": 500,  # Mock unrealized gains
             "monthlyGrowth": 2.5,  # Mock growth
             "cashBalance": cash_balance,
             "assets": []  # Empty assets when DB unavailable
@@ -262,7 +262,6 @@ def get_portfolio(orderBy, numEntries=None):
             # Get current stock price using yfinance
             stock = yf.Ticker(ticker)
             current_price = stock.info.get('regularMarketPrice')
-            print(current_price)
             change = calculate_change(current_price, weighted_buy_price)
 
             asset = {
@@ -325,9 +324,15 @@ def get_portfolio(orderBy, numEntries=None):
         # Calculate realized gains
         realized_gains = calculate_realized_gains()
         
+        # Calculate unrealized gains (only from stock appreciation, not cash deposits)
+        # This is the difference between current stock value and stock cost basis
+        current_stock_value = total_value - cash_balance
+        unrealized_gains = current_stock_value - stock_cost_basis
+        
         response = {
             "totalValue": round(total_value, 2),
             "profitLoss": round(profit_loss, 2),
+            "unrealizedGains": round(unrealized_gains, 2),
             "realizedGains": realized_gains,
             "totalReturnPercent": total_return_percent,
             "cashBalance": cash_balance,
@@ -348,6 +353,7 @@ def get_portfolio(orderBy, numEntries=None):
         return {
             "totalValue": cash_balance + 12000,
             "profitLoss": 500,
+            "unrealizedGains": 500,
             "totalReturnPercent": 4.17,  # 500/12000 * 100
             "cashBalance": cash_balance,
             "assets": []

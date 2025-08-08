@@ -68,7 +68,7 @@ export default function Dashboard() {
     dayGainPercent: (portfolioData as any)?.summary?.dayGainPercent || 0,
     cashBalance: (portfolioData as any)?.cashBalance || 0,
     realizedGains: (portfolioData as any)?.realizedGains || 0,
-    unrealizedGains: (portfolioData as any)?.profitLoss || 0
+    unrealizedGains: (portfolioData as any)?.unrealizedGains || 0
   };
   const holdings = (portfolioData as any)?.positions || (portfolioData as any)?.assets || [];
   const bestToken = (portfolioData as any)?.bestToken;

@@ -17,26 +17,28 @@ def test_realized_gains():
             # Check for realized gains in the response
             realized_gains = portfolio_data.get('realizedGains', 'Not found')
             profit_loss = portfolio_data.get('profitLoss', 'Not found')
+            unrealized_gains = portfolio_data.get('unrealizedGains', 'Not found')
             
             print(f"\nRealized Gains: ${realized_gains}")
-            print(f"Unrealized Gains (Profit/Loss): ${profit_loss}")
+            print(f"Unrealized Gains: ${unrealized_gains}")
+            print(f"Total Profit/Loss: ${profit_loss}")
             
             # Calculate total gains
-            if isinstance(realized_gains, (int, float)) and isinstance(profit_loss, (int, float)):
-                total_gains = realized_gains + profit_loss
+            if isinstance(realized_gains, (int, float)) and isinstance(unrealized_gains, (int, float)):
+                total_gains = realized_gains + unrealized_gains
                 print(f"Total Gains: ${total_gains:.2f}")
                 
                 # Show breakdown
                 print(f"\n=== Gains Breakdown ===")
                 print(f"Realized Gains: ${realized_gains:.2f}")
-                print(f"Unrealized Gains: ${profit_loss:.2f}")
+                print(f"Unrealized Gains: ${unrealized_gains:.2f}")
                 print(f"Total Portfolio Gains: ${total_gains:.2f}")
                 
                 # Show percentages if total value is available
                 total_value = portfolio_data.get('totalValue', 0)
                 if total_value > 0:
                     realized_percent = (realized_gains / total_value) * 100
-                    unrealized_percent = (profit_loss / total_value) * 100
+                    unrealized_percent = (unrealized_gains / total_value) * 100
                     total_percent = (total_gains / total_value) * 100
                     
                     print(f"\n=== Gains as Percentage of Portfolio ===")

@@ -87,6 +87,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get sector performance - integrates with Flask backend
+  app.get("/api/sector-performance", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/sector_performance');
+        if (response.ok) {
+          const sectorData = await response.json();
+          return res.json(sectorData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available, using fallback sector data');
+      }
+
+      // Fallback to mock data if Flask backend is not running
+      const mockSectorData = [
+        { name: 'Technology', change: 2.1, volume: '12.5B', top: 'NVDA', topChange: 3.4 },
+        { name: 'Healthcare', change: 1.3, volume: '8.2B', top: 'JNJ', topChange: 2.1 },
+        { name: 'Finance', change: -0.8, volume: '15.3B', top: 'JPM', topChange: -0.5 },
+        { name: 'Energy', change: 3.2, volume: '9.7B', top: 'XOM', topChange: 4.1 },
+        { name: 'Consumer Discretionary', change: 0.5, volume: '11.1B', top: 'AMZN', topChange: 1.2 },
+        { name: 'Consumer Staples', change: -0.2, volume: '6.8B', top: 'PG', topChange: 0.1 },
+        { name: 'Industrials', change: 1.7, volume: '7.9B', top: 'BA', topChange: 2.8 },
+        { name: 'Materials', change: 2.4, volume: '5.5B', top: 'FCX', topChange: 3.6 }
+      ];
+
+      res.json(mockSectorData);
+    } catch (error) {
+      console.error("Sector performance fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch sector performance" });
+    }
+  });
+
+  // Get market performance - integrates with Flask backend
+  app.get("/api/market-performance", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/market_performance');
+        if (response.ok) {
+          const performanceData = await response.json();
+          return res.json(performanceData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available, using fallback market performance data');
+      }
+
+      // Fallback to mock data if Flask backend is not running
+      res.json({});
+    } catch (error) {
+      console.error("Market performance fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch market performance" });
+    }
+  });
+
+  // Get economic indicators - integrates with Flask backend
+  app.get("/api/economic-indicators", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/economic_indicators');
+        if (response.ok) {
+          const economicData = await response.json();
+          return res.json(economicData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available, using fallback economic data');
+      }
+
+      // Fallback to mock data if Flask backend is not running
+      res.json({});
+    } catch (error) {
+      console.error("Economic indicators fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch economic indicators" });
+    }
+  });
+
   // Execute trade - integrates with   Flask backend handle_trade function  
   app.post("/api/trade", async (req, res) => {
     try {
@@ -278,6 +355,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get market data
   app.get("/api/market", async (req, res) => {
     try {
+      // First try to fetch real market data from Flask backend
+      try {
+        console.log('🔍 Attempting to fetch real market data from Flask backend...');
+        const response = await fetch('http://localhost:8000/api/market_movers');
+        
+        if (response.ok) {
+          const realMarketData = await response.json();
+          console.log('✅ Fetched real market data from Flask backend');
+          
+          // Convert to the format expected by the frontend
+          const marketIndices = [
+            {
+              name: realMarketData["S&P 500"].name,
+              symbol: "SPX",
+              value: realMarketData["S&P 500"].value,
+              change: realMarketData["S&P 500"].change,
+              changePercent: realMarketData["S&P 500"].changePercent,
+              volume: realMarketData["S&P 500"].volume
+            },
+            {
+              name: realMarketData["NASDAQ"].name,
+              symbol: "IXIC",
+              value: realMarketData["NASDAQ"].value,
+              change: realMarketData["NASDAQ"].change,
+              changePercent: realMarketData["NASDAQ"].changePercent,
+              volume: realMarketData["NASDAQ"].volume
+            },
+            {
+              name: realMarketData["Dow Jones"].name,
+              symbol: "DJI",
+              value: realMarketData["Dow Jones"].value,
+              change: realMarketData["Dow Jones"].change,
+              changePercent: realMarketData["Dow Jones"].changePercent,
+              volume: realMarketData["Dow Jones"].volume
+            },
+            {
+              name: realMarketData["Russell 2000"].name,
+              symbol: "RUT",
+              value: realMarketData["Russell 2000"].value,
+              change: realMarketData["Russell 2000"].change,
+              changePercent: realMarketData["Russell 2000"].changePercent,
+              volume: realMarketData["Russell 2000"].volume
+            }
+          ];
+          
+          const trendingStocks = await stockService.getTrendingStocks();
+          
+          return res.json({
+            trendingStocks,
+            marketIndices
+          });
+        } else {
+          console.log(`❌ Flask backend returned ${response.status} for market data`);
+        }
+      } catch (flaskError) {
+        console.log('⚠️ Flask backend error for market data:', (flaskError as Error).message);
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      console.log('🔄 Using fallback market data');
       const [trendingStocks, marketIndices] = await Promise.all([
         stockService.getTrendingStocks(),
         stockService.getMarketIndices()
