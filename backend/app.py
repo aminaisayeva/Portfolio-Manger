@@ -137,15 +137,22 @@ def add_funds_endpoint():
 def buy_stock():
     """API endpoint to buy stock."""
     try:
+        print("Buy stock endpoint called")
         data = request.get_json()
+        print(f"Request data: {data}")
+        
         symbol = data['symbol'].upper()
         quantity = int(data['quantity'])
+        
+        print(f"Processing buy: {quantity} shares of {symbol}")
         
         if quantity <= 0:
             return jsonify({"error": "Quantity must be positive"}), 400
         
-        # Use   handle_trade function from crud.py
+        # Use handle_trade function from crud.py
         handle_trade(symbol, quantity, 'BUY')
+        
+        print(f"Successfully processed buy for {symbol}")
         
         return jsonify({
             "message": f"Successfully bought {quantity} shares of {symbol}",
@@ -154,6 +161,7 @@ def buy_stock():
         }), 200
         
     except Exception as e:
+        print(f"Error in buy_stock endpoint: {str(e)}")
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/sell-stock', methods=['POST'])

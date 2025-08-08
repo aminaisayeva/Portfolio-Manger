@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
-import { TrendingUp, TrendingDown, Search, Filter, Calendar, DollarSign, BarChart3, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, Search, Filter, Calendar, DollarSign, BarChart3, Clock, X } from "lucide-react";
 import { format } from "date-fns";
 
 interface Transaction {
@@ -30,6 +30,12 @@ export function Trading() {
   const [dateFilter, setDateFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const transactionsPerPage = 10;
+  const [stockSearchTerm, setStockSearchTerm] = useState("");
+  const [stockSearchResults, setStockSearchResults] = useState<any[]>([]);
+  const [isSearchingStock, setIsSearchingStock] = useState(false);
+  const [selectedStockForBuy, setSelectedStockForBuy] = useState<any>(null);
+  const [buyQuantity, setBuyQuantity] = useState(1);
+  const [showBuyModal, setShowBuyModal] = useState(false);
 
   const { data: transactions = [], isLoading } = useQuery({
     queryKey: ['/api/transactions'],
@@ -46,6 +52,79 @@ export function Trading() {
       return response.json();
     }
   });
+
+  // Stock search function
+  const searchStocks = async (symbol: string) => {
+    if (!symbol.trim()) {
+      setStockSearchResults([]);
+      return;
+    }
+
+    setIsSearchingStock(true);
+    try {
+      const response = await fetch(`/api/stocks/${symbol.trim().toUpperCase()}`);
+      if (response.ok) {
+        const stockData = await response.json();
+        setStockSearchResults([stockData]);
+      } else {
+        setStockSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error searching stocks:', error);
+      setStockSearchResults([]);
+    } finally {
+      setIsSearchingStock(false);
+    }
+  };
+
+  // Buy stock function
+  const handleBuyStock = async () => {
+    if (!selectedStockForBuy || buyQuantity <= 0) return;
+
+    try {
+      const response = await fetch('/api/buy-stock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol: selectedStockForBuy.symbol,
+          quantity: buyQuantity
+        }),
+      });
+              console.log("Response status:", response.status);
+        console.log("Response ok:", response.ok);
+        console.log("Response headers:", response.headers);
+        
+        if (response.ok) {
+          console.log("Response is ok, trying to parse JSON...");
+          const responseText = await response.text();
+          console.log("Response text:", responseText);
+          
+          let result;
+          try {
+            result = JSON.parse(responseText);
+            console.log("Parsed result:", result);
+          } catch (parseError) {
+            console.error("JSON parse error:", parseError);
+            alert('Error parsing response from server');
+            return;
+          }
+        alert(`Successfully bought ${buyQuantity} shares of ${selectedStockForBuy.symbol}`);
+        setShowBuyModal(false);
+        setSelectedStockForBuy(null);
+        setBuyQuantity(1);
+        // Refresh the page to update portfolio data
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error || 'Failed to buy stock'}`);
+      }
+    } catch (error) {
+      console.error('Error buying stock:', error);
+      alert('Error buying stock. Please try again.');
+    }
+  };
 
   const filteredTransactions = transactions.filter((transaction: Transaction) => {
     const matchesSearch = transaction.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -235,6 +314,123 @@ export function Trading() {
           </Card>
         </div>
 
+        {/* Stock Search */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle className="text-foreground flex items-center space-x-2">
+              <Search className="w-5 h-5" />
+              <span>Search Stocks</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Enter stock symbol (e.g., AAPL, TSLA, GOOGL)..."
+                    value={stockSearchTerm}
+                    onChange={(e) => setStockSearchTerm(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && searchStocks(stockSearchTerm)}
+                    className="pl-10 bg-background border-border text-foreground"
+                  />
+                </div>
+                <Button 
+                  onClick={() => searchStocks(stockSearchTerm)}
+                  disabled={!stockSearchTerm.trim() || isSearchingStock}
+                  className="gradient-green text-white"
+                >
+                  {isSearchingStock ? (
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"></div>
+                  ) : (
+                    <Search className="w-4 h-4 mr-2" />
+                  )}
+                  Search
+                </Button>
+              </div>
+
+              {/* Stock Search Results */}
+              {stockSearchResults.length > 0 && (
+                <div className="space-y-4">
+                  {stockSearchResults.map((stock, index) => (
+                    <div key={index} className="p-4 rounded-lg bg-background border border-border">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-sm
+                            ${stock.symbol === 'AAPL' ? 'bg-gray-600' : 
+                              stock.symbol === 'TSLA' ? 'bg-red-600' :
+                              stock.symbol === 'GOOGL' ? 'bg-blue-600' :
+                              stock.symbol === 'AMZN' ? 'bg-orange-600' :
+                              stock.symbol === 'MSFT' ? 'bg-blue-500' :
+                              'bg-purple-600'}`}>
+                            {stock.symbol}
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-foreground">{stock.companyName}</h3>
+                            <p className="text-sm text-muted-foreground">Symbol: {stock.symbol}</p>
+                          </div>
+                        </div>
+                                                 <div className="text-right">
+                           <div className="text-2xl font-bold text-foreground">${stock.price?.toFixed(2) || '0.00'}</div>
+                           <div className={`flex items-center text-sm ${(stock.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                             {(stock.change || 0) >= 0 ? (
+                               <TrendingUp className="w-4 h-4 mr-1" />
+                             ) : (
+                               <TrendingDown className="w-4 h-4 mr-1" />
+                             )}
+                             {(stock.change || 0) >= 0 ? '+' : ''}{stock.change?.toFixed(2) || '0.00'} ({stock.changePercent?.toFixed(2) || '0.00'}%)
+                           </div>
+                         </div>
+                         <div className="flex items-center space-x-2">
+                           <Button 
+                             size="sm" 
+                             className="gradient-green text-white"
+                             onClick={() => {
+                               setSelectedStockForBuy(stock);
+                               setShowBuyModal(true);
+                             }}
+                           >
+                             Buy
+                           </Button>
+                         </div>
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Volume</p>
+                          <p className="font-medium text-foreground">{stock.volume?.toLocaleString() || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Market Cap</p>
+                          <p className="font-medium text-foreground">
+                            {stock.marketCap ? `$${(stock.marketCap / 1000000000).toFixed(2)}B` : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Previous Close</p>
+                          <p className="font-medium text-foreground">${stock.previousClose?.toFixed(2) || 'N/A'}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Day Range</p>
+                          <p className="font-medium text-foreground">
+                            ${stock.dayLow?.toFixed(2) || 'N/A'} - ${stock.dayHigh?.toFixed(2) || 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {stockSearchTerm && stockSearchResults.length === 0 && !isSearchingStock && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No stock found with symbol "{stockSearchTerm}"</p>
+                  <p className="text-sm text-muted-foreground mt-2">Try searching for a valid stock symbol</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Filters */}
         <Card className="bg-card border-border">
           <CardHeader>
@@ -421,6 +617,92 @@ export function Trading() {
         </Card>
         </div>
       </div>
+
+      {/* Buy Stock Modal */}
+      {showBuyModal && selectedStockForBuy && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-card border border-border rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-foreground">Buy {selectedStockForBuy.symbol}</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowBuyModal(false);
+                  setSelectedStockForBuy(null);
+                  setBuyQuantity(1);
+                }}
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg bg-background border border-border">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-foreground">{selectedStockForBuy.companyName}</span>
+                  <span className="text-sm text-muted-foreground">{selectedStockForBuy.symbol}</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">${selectedStockForBuy.price?.toFixed(2) || '0.00'}</div>
+                <div className={`flex items-center text-sm ${(selectedStockForBuy.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {(selectedStockForBuy.change || 0) >= 0 ? (
+                    <TrendingUp className="w-4 h-4 mr-1" />
+                  ) : (
+                    <TrendingDown className="w-4 h-4 mr-1" />
+                  )}
+                  {(selectedStockForBuy.change || 0) >= 0 ? '+' : ''}{selectedStockForBuy.change?.toFixed(2) || '0.00'} ({selectedStockForBuy.changePercent?.toFixed(2) || '0.00'}%)
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-foreground mb-2">Quantity</label>
+                <Input
+                  type="number"
+                  min="1"
+                  value={buyQuantity}
+                  onChange={(e) => setBuyQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="bg-background border-border text-foreground"
+                />
+              </div>
+
+              <div className="p-4 rounded-lg bg-muted/50">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Price per share:</span>
+                  <span className="text-foreground">${selectedStockForBuy.price?.toFixed(2) || '0.00'}</span>
+                </div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-muted-foreground">Quantity:</span>
+                  <span className="text-foreground">{buyQuantity}</span>
+                </div>
+                <div className="flex justify-between text-lg font-bold border-t border-border pt-2">
+                  <span className="text-foreground">Total:</span>
+                  <span className="text-foreground">${((selectedStockForBuy.price || 0) * buyQuantity).toFixed(2)}</span>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowBuyModal(false);
+                    setSelectedStockForBuy(null);
+                    setBuyQuantity(1);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 gradient-green text-white"
+                  onClick={handleBuyStock}
+                >
+                  Buy {buyQuantity} Share{buyQuantity > 1 ? 's' : ''}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <FloatingAIChat />
     </div>
