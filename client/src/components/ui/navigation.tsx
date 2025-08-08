@@ -10,17 +10,17 @@ export function Navigation() {
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center space-x-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 gradient-purple rounded-lg flex items-center justify-center">
-                <ChartLine className="text-white w-4 h-4" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Team15</span>
+        <div className="flex justify-between items-center h-16 relative">
+          {/* Logo and Title */}
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 gradient-purple rounded-lg flex items-center justify-center">
+              <ChartLine className="text-white w-4 h-4" />
             </div>
-            
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-6">
+            <span className="text-xl font-bold text-foreground">ThemisTrends</span>
+          </div>
+          
+          {/* Desktop Navigation - Centered */}
+          <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
               <Link href="/" className={`font-medium py-2 px-1 relative transition-colors ${
                 location === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}>
@@ -52,7 +52,6 @@ export function Navigation() {
                 {location === "/market" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
               </Link>
             </div>
-          </div>
           
           <div className="flex items-center space-x-4">
             {/* Mobile menu button */}
@@ -64,17 +63,6 @@ export function Navigation() {
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
-            
-            {/* User Profile */}
-            <Link href="/settings" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-              <div className="text-right hidden sm:block">
-                <div className="text-sm font-medium text-foreground">Alex Johnson</div>
-                <div className="text-xs text-muted-foreground">Premium</div>
-              </div>
-              <div className="w-8 h-8 gradient-blue rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-medium">AJ</span>
-              </div>
-            </Link>
           </div>
         </div>
         
@@ -137,18 +125,6 @@ export function Navigation() {
               >
                 Market
               </Link>
-              <div className="border-t border-border pt-2 mt-2">
-                <Link 
-                  href="/settings" 
-                  className="flex items-center px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  <div className="w-6 h-6 gradient-blue rounded-full flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-medium">AJ</span>
-                  </div>
-                  Alex Johnson - Settings
-                </Link>
-              </div>
             </div>
           </div>
         )}

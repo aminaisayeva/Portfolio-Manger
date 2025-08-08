@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,8 @@ export function Portfolio() {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState("totalValue");
   const [sortOrder, setSortOrder] = useState("desc");
+  const [currentPage, setCurrentPage] = useState(1);
+  const holdingsPerPage = 10;
 
   const { data: portfolioData, isLoading } = useQuery({
     queryKey: ['/api/portfolio'],
@@ -53,11 +55,11 @@ export function Portfolio() {
     );
   }
 
-  // Adapt to   MySQL Flask backend structure  
+  // Adapt to MySQL Flask backend structure  
   const portfolioSummary = {
     totalValue: (portfolioData as any)?.totalValue || 0,
-    totalGain: (portfolioData as any)?.profitLoss || 0,
-    totalGainPercent: (portfolioData as any)?.monthlyGrowth || 0,
+    totalGain: ((portfolioData as any)?.realizedGains || 0) + ((portfolioData as any)?.unrealizedGains || 0),
+    totalGainPercent: (portfolioData as any)?.totalReturnPercent || 0,
     dayGain: 0,
     dayGainPercent: 0
   };
@@ -78,13 +80,17 @@ export function Portfolio() {
           aValue = (a.price || 0) * (a.volume || 0);
           bValue = (b.price || 0) * (b.volume || 0);
           break;
-        case 'companyName':
-          aValue = a.company_name || a.name || '';
-          bValue = b.company_name || b.name || '';
+        case 'change':
+          aValue = a.change || 0;
+          bValue = b.change || 0;
           break;
         case 'shares':
           aValue = a.volume || 0;
           bValue = b.volume || 0;
+          break;
+        case 'symbol':
+          aValue = a.symbol || '';
+          bValue = b.symbol || '';
           break;
         default:
           aValue = a[sortBy] || 0;
@@ -105,7 +111,19 @@ export function Portfolio() {
       setSortBy(field);
       setSortOrder("desc");
     }
+    setCurrentPage(1); // Reset to first page when sorting changes
   };
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredHoldings.length / holdingsPerPage);
+  const startIndex = (currentPage - 1) * holdingsPerPage;
+  const endIndex = startIndex + holdingsPerPage;
+  const currentHoldings = filteredHoldings.slice(startIndex, endIndex);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -200,8 +218,7 @@ export function Portfolio() {
                   </SelectTrigger>
                   <SelectContent className="bg-background border-border">
                     <SelectItem value="totalValue">Sort by Value</SelectItem>
-                    <SelectItem value="gainPercent">Sort by Return %</SelectItem>
-                    <SelectItem value="gain">Sort by Gain/Loss</SelectItem>
+                    <SelectItem value="change">Sort by Gain/Loss</SelectItem>
                     <SelectItem value="shares">Sort by Shares</SelectItem>
                     <SelectItem value="symbol">Sort by Symbol</SelectItem>
                   </SelectContent>
@@ -221,12 +238,19 @@ export function Portfolio() {
           {/* Holdings Table */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-foreground">All Holdings ({filteredHoldings.length})</CardTitle>
+              <CardTitle className="text-xl font-bold text-foreground">
+                All Holdings ({filteredHoldings.length})
+                {totalPages > 1 && (
+                  <span className="text-sm font-normal text-muted-foreground ml-2">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                )}
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              {filteredHoldings.length > 0 ? (
+              {currentHoldings.length > 0 ? (
                 <div className="space-y-4">
-                  {filteredHoldings.map((holding: any, index: number) => (
+                  {currentHoldings.map((holding: any, index: number) => (
                     <div key={index} className="flex items-center justify-between p-6 rounded-lg bg-background border border-border hover:border-blue-500/30 transition-all">
                       <div className="flex items-center space-x-4">
                         <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-white font-bold text-sm
@@ -295,11 +319,51 @@ export function Portfolio() {
                       </div>
                     </div>
                   ))}
+                  
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between pt-6 border-t border-border">
+                      <div className="text-sm text-muted-foreground">
+                        Showing {startIndex + 1} to {Math.min(endIndex, filteredHoldings.length)} of {filteredHoldings.length} holdings
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          Previous
+                        </Button>
+                        <div className="flex items-center space-x-1">
+                          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="w-8 h-8 p-0"
+                            >
+                              {page}
+                            </Button>
+                          ))}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCurrentPage(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-12">
                   <p className="text-muted-foreground">
-                    {searchTerm ? "No holdings match   search." : "No holdings yet. Start investing to see   portfolio here."}
+                    {searchTerm ? "No holdings match your search." : "No holdings yet. Start investing to see your portfolio here."}
                   </p>
                 </div>
               )}

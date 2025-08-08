@@ -279,32 +279,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Market Snapshot */}
-          <Card className="bg-card rounded-xl card-glow-purple border border-border">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-foreground">Market Snapshot</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {(marketData as any)?.trendingStocks?.slice(0, 4).map((stock: any, index: number) => (
-                  <div key={index} className="p-4 rounded-lg bg-background">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-semibold text-foreground">{stock.symbol}</span>
-                      <Badge variant={stock.changePercent >= 0 ? "default" : "destructive"} className="text-xs">
-                        {stock.changePercent >= 0 ? '+' : ''}{stock.changePercent.toFixed(2)}%
-                      </Badge>
-                    </div>
-                    <div className="text-lg font-bold text-foreground">${stock.price.toFixed(2)}</div>
-                    <div className="text-sm text-muted-foreground">{stock.companyName}</div>
-                  </div>
-                )) || (
-                  <div className="col-span-4 text-center py-4">
-                    <p className="text-muted-foreground">Market data loading...</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+
         </div>
       </div>
 

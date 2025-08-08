@@ -153,8 +153,8 @@ export function Trading() {
                 ${portfolio?.totalValue?.toLocaleString() || '0'}
               </div>
               <div className="flex items-center space-x-1 text-xs">
-                <span className={`${(portfolio?.profitLoss || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                  {(portfolio?.profitLoss || 0) >= 0 ? '+' : ''}${portfolio?.profitLoss?.toFixed(2) || '0'}
+                <span className={`${((portfolio?.realizedGains || 0) + (portfolio?.unrealizedGains || 0)) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {((portfolio?.realizedGains || 0) + (portfolio?.unrealizedGains || 0)) >= 0 ? '+' : ''}${((portfolio?.realizedGains || 0) + (portfolio?.unrealizedGains || 0)).toFixed(2) || '0'}
                 </span>
                 <span className="text-muted-foreground">total P&L</span>
               </div>
@@ -192,8 +192,6 @@ export function Trading() {
               <div className="text-2xl font-bold text-foreground">{totalTransactions}</div>
               <div className="flex items-center space-x-2 text-xs">
                 <span className="text-muted-foreground">{uniqueTradingDays} days</span>
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">${averageTradeSize.toFixed(0)} avg</span>
               </div>
             </CardContent>
           </Card>
@@ -220,8 +218,8 @@ export function Trading() {
               <TrendingUp className="h-4 w-4 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-foreground">${totalBuyValue.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground">Total investment capital</p>
+              <div className="text-2xl font-bold text-foreground">${((portfolio?.totalValue || 0) - (portfolio?.cashBalance || 0)).toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">Currently in stocks</p>
             </CardContent>
           </Card>
 
@@ -346,7 +344,7 @@ export function Trading() {
                               if (isNaN(date.getTime())) {
                                 return 'Invalid date';
                               }
-                              return format(date, 'MMM dd, yyyy HH:mm');
+                              return format(date, 'MMM dd, yyyy');
                             } catch (error) {
                               return 'Invalid date';
                             }

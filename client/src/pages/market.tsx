@@ -13,64 +13,7 @@ import { TrendingUp, TrendingDown, Search, Globe, DollarSign, Activity, Calendar
 
 
 
-// Most active stocks
-const mostActiveStocks = [
-  { symbol: 'TSLA', name: 'Tesla Inc', price: 245.67, change: 8.34, changePercent: 3.52, volume: '89.2M' },
-  { symbol: 'AAPL', name: 'Apple Inc', price: 182.45, change: -2.11, changePercent: -1.14, volume: '67.8M' },
-  { symbol: 'NVDA', name: 'NVIDIA Corp', price: 456.78, change: 15.67, changePercent: 3.56, volume: '78.9M' },
-  { symbol: 'MSFT', name: 'Microsoft Corp', price: 378.92, change: 4.23, changePercent: 1.13, volume: '45.6M' },
-  { symbol: 'AMZN', name: 'Amazon Inc', price: 142.56, change: -1.87, changePercent: -1.29, volume: '52.3M' }
-];
-
-// Top gainers
-const topGainers = [
-  { symbol: 'NVDA', name: 'NVIDIA Corp', price: 456.78, changePercent: 8.45 },
-  { symbol: 'AMD', name: 'Advanced Micro Devices', price: 156.32, changePercent: 6.78 },
-  { symbol: 'TSLA', name: 'Tesla Inc', price: 245.67, changePercent: 5.23 },
-  { symbol: 'SHOP', name: 'Shopify Inc', price: 89.45, changePercent: 4.91 },
-  { symbol: 'CRM', name: 'Salesforce Inc', price: 234.12, changePercent: 4.56 }
-];
-
-// Top losers
-const topLosers = [
-  { symbol: 'META', name: 'Meta Platforms', price: 324.56, changePercent: -4.23 },
-  { symbol: 'NFLX', name: 'Netflix Inc', price: 445.78, changePercent: -3.89 },
-  { symbol: 'PYPL', name: 'PayPal Holdings', price: 67.89, changePercent: -3.45 },
-  { symbol: 'UBER', name: 'Uber Technologies', price: 54.32, changePercent: -2.98 },
-  { symbol: 'SNAP', name: 'Snap Inc', price: 12.45, changePercent: -2.76 }
-];
-
-// Market news (mock data)
-const marketNews = [
-  {
-    id: 1,
-    title: "Fed Signals Potential Rate Cut as Inflation Cools",
-    source: "MarketWatch",
-    time: "2 hours ago",
-    impact: "high"
-  },
-  {
-    id: 2,
-    title: "Tech Earnings Season Kicks Off with Strong Results",
-    source: "CNBC",
-    time: "4 hours ago",
-    impact: "medium"
-  },
-  {
-    id: 3,
-    title: "Oil Prices Surge on Middle East Tensions",
-    source: "Bloomberg",
-    time: "6 hours ago",
-    impact: "high"
-  },
-  {
-    id: 4,
-    title: "Consumer Confidence Index Beats Expectations",
-    source: "Reuters",
-    time: "1 day ago",
-    impact: "medium"
-  }
-];
+// Market news - now fetched from API
 
 // Economic indicators - now fetched from API
 
@@ -173,10 +116,7 @@ export function Market() {
     return chartData;
   };
 
-  const filteredStocks = mostActiveStocks.filter(stock =>
-    stock.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    stock.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStocks = []; // No static data, so no filtering
 
   if (isLoading) {
     return (
@@ -433,129 +373,6 @@ export function Market() {
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Market Movers */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Most Active */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Activity className="w-5 h-5" />
-                  <span>Most Active</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mostActiveStocks.slice(0, 5).map((stock, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-foreground">{stock.symbol}</div>
-                        <div className="text-sm text-muted-foreground">Vol: {stock.volume}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-foreground">${stock.price}</div>
-                        <div className={`text-sm ${stock.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                          {stock.change > 0 ? '+' : ''}{stock.changePercent}%
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Gainers */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
-                  <span>Top Gainers</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {topGainers.map((stock, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-foreground">{stock.symbol}</div>
-                        <div className="text-sm text-muted-foreground">{stock.name}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-foreground">${stock.price}</div>
-                        <div className="text-sm text-green-400">+{stock.changePercent}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Top Losers */}
-            <Card className="bg-card border-border">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingDown className="w-5 h-5 text-red-400" />
-                  <span>Top Losers</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {topLosers.map((stock, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-foreground">{stock.symbol}</div>
-                        <div className="text-sm text-muted-foreground">{stock.name}</div>
-                      </div>
-                      <div className="text-right">
-                        <div className="font-medium text-foreground">${stock.price}</div>
-                        <div className="text-sm text-red-400">{stock.changePercent}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Market News */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <AlertCircle className="w-5 h-5" />
-                <span>Market News</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {marketNews.map((news) => (
-                  <div key={news.id} className="flex items-start space-x-4 p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors">
-                    <div className={`w-3 h-3 rounded-full mt-2 ${
-                      news.impact === 'high' ? 'bg-red-400' : 
-                      news.impact === 'medium' ? 'bg-yellow-400' : 'bg-green-400'
-                    }`}></div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-foreground mb-1">{news.title}</h4>
-                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                        <span>{news.source}</span>
-                        <span>•</span>
-                        <span>{news.time}</span>
-                        <Badge 
-                          variant="outline" 
-                          className={`text-xs ${
-                            news.impact === 'high' ? 'border-red-400 text-red-400' :
-                            news.impact === 'medium' ? 'border-yellow-400 text-yellow-400' :
-                            'border-green-400 text-green-400'
-                          }`}
-                        >
-                          {news.impact} impact
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </CardContent>
           </Card>
         </div>
