@@ -164,6 +164,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get market news - integrates with Flask backend
+  app.get("/api/market-news", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/market_news');
+        if (response.ok) {
+          const newsData = await response.json();
+          return res.json(newsData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available, using fallback market news data');
+      }
+
+      // Fallback to mock data if Flask backend is not running
+      res.json([
+        {
+          id: 1,
+          title: "Fed Signals Potential Rate Cut as Inflation Cools",
+          source: "MarketWatch",
+          time: "2 hours ago",
+          impact: "high"
+        },
+        {
+          id: 2,
+          title: "Tech Earnings Season Kicks Off with Strong Results",
+          source: "CNBC",
+          time: "4 hours ago",
+          impact: "medium"
+        },
+        {
+          id: 3,
+          title: "Oil Prices Surge on Middle East Tensions",
+          source: "Bloomberg",
+          time: "6 hours ago",
+          impact: "high"
+        },
+        {
+          id: 4,
+          title: "Consumer Confidence Index Beats Expectations",
+          source: "Reuters",
+          time: "1 day ago",
+          impact: "medium"
+        }
+      ]);
+    } catch (error) {
+      console.error("Market news fetch error:", error);
+      res.status(500).json({ message: "Failed to fetch market news" });
+    }
+  });
+
   // Execute trade - integrates with   Flask backend handle_trade function  
   app.post("/api/trade", async (req, res) => {
     try {

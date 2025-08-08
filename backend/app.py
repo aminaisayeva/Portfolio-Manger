@@ -414,104 +414,96 @@ def get_sector_performance():
 
 @app.route('/api/economic_indicators')
 def get_economic_indicators():
-    """Get real economic indicators data."""
+    """Get real-time economic indicators data."""
     try:
-        indicators = {}
+        # Define economic indicators to track
+        indicators = {
+            "10-Year Treasury": "^TNX",
+            "30-Year Treasury": "^TYX", 
+            "Dollar Index": "DXY",
+            "Gold": "GC=F",
+            "Oil (WTI)": "CL=F",
+            "Natural Gas": "NG=F"
+        }
         
-        # Fed Funds Rate (^IRX - 13 Week Treasury Bill)
-        try:
-            irx = yf.Ticker("^IRX")
-            irx_info = irx.info
-            fed_rate = irx_info.get('regularMarketPrice', 0)
-            fed_change = irx_info.get('regularMarketChange', 0)
-            indicators["Fed Funds Rate"] = {
-                "value": f"{fed_rate:.4f}%",
-                "change": round(fed_change, 4),
-                "trend": "neutral" if fed_change == 0 else ("up" if fed_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching Fed Funds Rate: {str(e)}")
-            indicators["Fed Funds Rate"] = {"value": "5.2500%", "change": 0, "trend": "neutral"}
+        economic_data = {}
         
-        # 10-Year Treasury Yield (^TNX)
-        try:
-            tnx = yf.Ticker("^TNX")
-            tnx_info = tnx.info
-            treasury_10y = tnx_info.get('regularMarketPrice', 0)
-            treasury_change = tnx_info.get('regularMarketChange', 0)
-            indicators["10-Year Treasury"] = {
-                "value": f"{treasury_10y:.4f}%",
-                "change": round(treasury_change, 4),
-                "trend": "neutral" if treasury_change == 0 else ("up" if treasury_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching 10-Year Treasury: {str(e)}")
-            indicators["10-Year Treasury"] = {"value": "4.3200%", "change": -0.0500, "trend": "down"}
+        for name, symbol in indicators.items():
+            try:
+                ticker = yf.Ticker(symbol)
+                
+                # Try multiple methods to get the data
+                current_value = 0
+                previous_close = 0
+                
+                # Method 1: Try ticker.info
+                info = ticker.info
+                current_value = info.get('regularMarketPrice', 0)
+                previous_close = info.get('regularMarketPreviousClose', current_value)
+                
+                # Method 2: If no data from info, try history
+                if current_value == 0:
+                    try:
+                        history = ticker.history(period="2d")
+                        if not history.empty and len(history) >= 2:
+                            current_value = history['Close'].iloc[-1]
+                            previous_close = history['Close'].iloc[-2]
+                    except Exception as hist_error:
+                        print(f"History method failed for {name} ({symbol}): {hist_error}")
+                
+                # Method 3: For Dollar Index specifically, try alternative symbols
+                if name == "Dollar Index" and current_value == 0:
+                    try:
+                        # Try alternative Dollar Index symbols
+                        alt_symbols = ["^DXY", "DX-Y.NYB", "UUP"]
+                        for alt_symbol in alt_symbols:
+                            alt_ticker = yf.Ticker(alt_symbol)
+                            alt_info = alt_ticker.info
+                            alt_value = alt_info.get('regularMarketPrice', 0)
+                            if alt_value > 0:
+                                current_value = alt_value
+                                previous_close = alt_info.get('regularMarketPreviousClose', alt_value)
+                                print(f"Found Dollar Index data using {alt_symbol}: {current_value}")
+                                break
+                    except Exception as alt_error:
+                        print(f"Alternative symbols failed for Dollar Index: {alt_error}")
+                
+                # Calculate changes
+                change = current_value - previous_close
+                change_percent = (change / previous_close * 100) if previous_close > 0 else 0
+                
+                # Determine trend
+                if change > 0:
+                    trend = "up"
+                elif change < 0:
+                    trend = "down"
+                else:
+                    trend = "neutral"
+                
+                # Debug output for Dollar Index
+                if name == "Dollar Index":
+                    print(f"Dollar Index debug - Symbol: {symbol}, Current: {current_value}, Previous: {previous_close}, Change: {change}")
+                
+                economic_data[name] = {
+                    "value": round(current_value, 2),
+                    "change": round(change, 2),
+                    "changePercent": round(change_percent, 2),
+                    "trend": trend
+                }
+            except Exception as e:
+                print(f"Error fetching {name} ({symbol}): {e}")
+                economic_data[name] = {
+                    "value": 0,
+                    "change": 0,
+                    "changePercent": 0,
+                    "trend": "neutral"
+                }
         
-        # VIX Volatility Index (^VIX)
-        try:
-            vix = yf.Ticker("^VIX")
-            vix_info = vix.info
-            vix_value = vix_info.get('regularMarketPrice', 0)
-            vix_change = vix_info.get('regularMarketChange', 0)
-            indicators["VIX (Volatility)"] = {
-                "value": f"{vix_value:.4f}",
-                "change": round(vix_change, 4),
-                "trend": "neutral" if vix_change == 0 else ("up" if vix_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching VIX: {str(e)}")
-            indicators["VIX (Volatility)"] = {"value": "18.4500", "change": 1.2300, "trend": "up"}
-        
-        # USD Index (DX-Y.NYB)
-        try:
-            usd = yf.Ticker("DX-Y.NYB")
-            usd_info = usd.info
-            usd_value = usd_info.get('regularMarketPrice', 0)
-            usd_change = usd_info.get('regularMarketChange', 0)
-            indicators["USD Index"] = {
-                "value": f"{usd_value:.4f}",
-                "change": round(usd_change, 4),
-                "trend": "neutral" if usd_change == 0 else ("up" if usd_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching USD Index: {str(e)}")
-            indicators["USD Index"] = {"value": "103.4500", "change": 0.3400, "trend": "up"}
-        
-        # Gold (GC=F)
-        try:
-            gold = yf.Ticker("GC=F")
-            gold_info = gold.info
-            gold_value = gold_info.get('regularMarketPrice', 0)
-            gold_change = gold_info.get('regularMarketChange', 0)
-            indicators["Gold"] = {
-                "value": f"${gold_value:.4f}",
-                "change": round(gold_change, 4),
-                "trend": "neutral" if gold_change == 0 else ("up" if gold_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching Gold: {str(e)}")
-            indicators["Gold"] = {"value": "$2034.0000", "change": -12.4500, "trend": "down"}
-        
-        # Oil WTI (CL=F)
-        try:
-            oil = yf.Ticker("CL=F")
-            oil_info = oil.info
-            oil_value = oil_info.get('regularMarketPrice', 0)
-            oil_change = oil_info.get('regularMarketChange', 0)
-            indicators["Oil (WTI)"] = {
-                "value": f"${oil_value:.4f}",
-                "change": round(oil_change, 4),
-                "trend": "neutral" if oil_change == 0 else ("up" if oil_change > 0 else "down")
-            }
-        except Exception as e:
-            print(f"Error fetching Oil: {str(e)}")
-            indicators["Oil (WTI)"] = {"value": "$82.3400", "change": 2.6700, "trend": "up"}
-        
-        return jsonify(indicators), 200
-        
+        return jsonify(economic_data), 200
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": f"Failed to fetch economic indicators: {str(e)}"}), 500
+
+
 
 if __name__ == '__main__':
     print("Portfolio system initialized")

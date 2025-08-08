@@ -53,11 +53,11 @@ export function Portfolio() {
     );
   }
 
-  // Adapt to   MySQL Flask backend structure  
+  // Adapt to MySQL Flask backend structure  
   const portfolioSummary = {
     totalValue: (portfolioData as any)?.totalValue || 0,
-    totalGain: (portfolioData as any)?.profitLoss || 0,
-    totalGainPercent: (portfolioData as any)?.monthlyGrowth || 0,
+    totalGain: ((portfolioData as any)?.realizedGains || 0) + ((portfolioData as any)?.unrealizedGains || 0),
+    totalGainPercent: (portfolioData as any)?.totalReturnPercent || 0,
     dayGain: 0,
     dayGainPercent: 0
   };

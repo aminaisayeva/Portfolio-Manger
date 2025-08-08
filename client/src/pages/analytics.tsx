@@ -100,9 +100,9 @@ export function Analytics() {
       return [
         { metric: 'Total Return', value: '0.0%', change: '0.0%', status: 'neutral' },
         { metric: 'Annualized Return', value: '0.0%', change: '0.0%', status: 'neutral' },
-        { metric: 'Sharpe Ratio', value: '0.00', change: '0.00', status: 'neutral' },
-        { metric: 'Max Drawdown', value: '0.0%', change: '0.0%', status: 'neutral' },
-        { metric: 'Volatility', value: '0.0%', change: '0.0%', status: 'neutral' },
+        { metric: 'Sharpe Ratio', value: 'N/A', change: 'Insufficient data', status: 'neutral' },
+        { metric: 'Portfolio Beta', value: '1.00', change: 'Equal to market', status: 'neutral' },
+        { metric: 'Volatility', value: 'N/A', change: 'Insufficient data', status: 'neutral' },
         { metric: 'Alpha', value: '0.0%', change: '0.0%', status: 'neutral' }
       ];
     }
@@ -130,23 +130,47 @@ export function Analytics() {
     const riskFreeRate = 2.0; // Annual risk-free rate
     const monthlyRiskFreeRate = riskFreeRate / 12;
     const excessReturn = meanReturn - monthlyRiskFreeRate;
-    const sharpeRatio = volatility > 0 ? excessReturn / volatility : 0;
     
-    // Calculate max drawdown (simplified - would need daily data for accurate calculation)
-    let maxDrawdown = 0;
-    let peak = 0;
-    let cumulativeReturn = 0;
+    // Handle insufficient data for Sharpe Ratio and Volatility (especially for 1M timeframe)
+    const hasInsufficientData = monthlyReturns.length < 3; // Need at least 3 data points for meaningful calculations
     
-    monthlyReturns.forEach((month: any) => {
-      cumulativeReturn += (month.returns || 0);
-      if (cumulativeReturn > peak) {
-        peak = cumulativeReturn;
-      }
-      const drawdown = (peak - cumulativeReturn) / (1 + peak / 100);
-      if (drawdown > maxDrawdown) {
-        maxDrawdown = drawdown;
-      }
-    });
+    let sharpeRatio = 0;
+    let volatilityDisplay = volatility;
+    let sharpeDisplay = "0.00";
+    let volatilityChange = "0.0% vs target";
+    let sharpeChange = "0.00 vs benchmark";
+    
+    if (hasInsufficientData) {
+      // For insufficient data, show meaningful messages instead of 0
+      sharpeDisplay = "N/A";
+      volatilityDisplay = 0;
+      sharpeChange = "Insufficient data";
+      volatilityChange = "Insufficient data";
+    } else {
+      sharpeRatio = volatility > 0 ? excessReturn / volatility : 0;
+      sharpeDisplay = sharpeRatio.toFixed(2);
+      sharpeChange = `${sharpeRatio >= 1 ? '+' : ''}${(sharpeRatio - 1).toFixed(2)} vs benchmark`;
+    }
+    
+    // Calculate portfolio beta (systematic risk relative to market)
+    const portfolioReturns = monthlyReturns.map((month: any) => month.returns || 0);
+    const marketReturns = monthlyReturns.map((month: any) => month.benchmark || 0);
+    
+    // Calculate covariance and variance for beta calculation
+    const meanPortfolioReturn = portfolioReturns.reduce((sum: number, val: number) => sum + val, 0) / portfolioReturns.length;
+    const meanMarketReturn = marketReturns.reduce((sum: number, val: number) => sum + val, 0) / marketReturns.length;
+    
+    let covariance = 0;
+    let marketVariance = 0;
+    
+    for (let i = 0; i < portfolioReturns.length; i++) {
+      const portfolioDiff = portfolioReturns[i] - meanPortfolioReturn;
+      const marketDiff = marketReturns[i] - meanMarketReturn;
+      covariance += portfolioDiff * marketDiff;
+      marketVariance += marketDiff * marketDiff;
+    }
+    
+    const beta = marketVariance > 0 ? covariance / marketVariance : 1;
 
     return [
       { 
@@ -163,21 +187,21 @@ export function Analytics() {
       },
       { 
         metric: 'Sharpe Ratio', 
-        value: sharpeRatio.toFixed(2), 
-        change: `${sharpeRatio >= 1 ? '+' : ''}${(sharpeRatio - 1).toFixed(2)} vs benchmark`, 
-        status: sharpeRatio >= 1 ? 'positive' : 'negative' 
+        value: sharpeDisplay, 
+        change: sharpeChange, 
+        status: hasInsufficientData ? 'neutral' : (sharpeRatio >= 1 ? 'positive' : 'negative')
       },
       { 
-        metric: 'Max Drawdown', 
-        value: `-${(maxDrawdown * 100).toFixed(1)}%`, 
-        change: `${maxDrawdown <= 0.1 ? '+' : ''}${((0.1 - maxDrawdown) * 100).toFixed(1)}% vs target`, 
-        status: maxDrawdown <= 0.1 ? 'positive' : 'negative' 
+        metric: 'Portfolio Beta', 
+        value: beta.toFixed(2), 
+        change: `${beta > 1 ? 'Higher' : beta < 1 ? 'Lower' : 'Equal'} risk than market`, 
+        status: beta <= 1 ? 'positive' : 'negative' 
       },
       { 
         metric: 'Volatility', 
-        value: `${volatility.toFixed(1)}%`, 
-        change: `${volatility <= 15 ? '+' : ''}${(15 - volatility).toFixed(1)}% vs target`, 
-        status: volatility <= 15 ? 'positive' : 'negative' 
+        value: hasInsufficientData ? "N/A" : `${volatilityDisplay.toFixed(1)}%`, 
+        change: volatilityChange, 
+        status: hasInsufficientData ? 'neutral' : (volatilityDisplay <= 15 ? 'positive' : 'negative')
       },
       { 
         metric: 'Alpha', 
