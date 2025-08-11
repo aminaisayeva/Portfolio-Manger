@@ -240,14 +240,63 @@ export function Portfolio() {
           {/* Holdings Table */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-foreground">
-                All Holdings ({filteredHoldings.length})
-                {totalPages > 1 && (
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                )}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold text-foreground">
+                  All Holdings ({filteredHoldings.length})
+                  {totalPages > 1 && (
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                  )}
+                </CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                    >
+                      <Info className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" sideOffset={5} className="max-w-md bg-background border-2 border-blue-200 shadow-lg">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-foreground text-lg">Portfolio Holdings Guide</h4>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <h5 className="font-medium text-foreground">📊 Share Details</h5>
+                          <p className="text-sm text-muted-foreground">The number of shares you own and the current market price per share. This shows your ownership stake in the company.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">💰 Cost Information</h5>
+                          <p className="text-sm text-muted-foreground"><strong>Average Cost:</strong> The weighted average price you paid for all shares. <strong>Total Cost:</strong> The total amount you've invested in this position.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">📈 Market Value</h5>
+                          <p className="text-sm text-muted-foreground">The current total value of your position based on the current market price and number of shares you own. Formula: Current Price × Number of Shares</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">📊 Gain/Loss</h5>
+                          <p className="text-sm text-muted-foreground">The percentage change in value from your average cost to the current market price. <span className="text-green-400">Green</span> means you're making money, <span className="text-red-400">red</span> means you're losing money. This is unrealized until you sell.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">🔄 Actions</h5>
+                          <p className="text-sm text-muted-foreground"><strong>Buy:</strong> Purchase more shares. <strong>Sell:</strong> Sell your existing shares to realize gains or cut losses.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">💡 <strong>Tip:</strong> Hover over any holding to see real-time updates. Use the search and sort features to organize your portfolio effectively.</p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </CardHeader>
             <CardContent>
               {currentHoldings.length > 0 ? (
@@ -266,106 +315,26 @@ export function Portfolio() {
                         </div>
                         <div>
                           <h3 className="text-lg font-semibold text-foreground">{holding.company_name || holding.name}</h3>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-sm text-muted-foreground">
-                              {holding.volume} shares at ${holding.price ? holding.price.toFixed(2) : "0.00"} each
-                            </p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
-                                >
-                                  <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
-                                <div className="space-y-2">
-                                  <h4 className="font-semibold text-foreground">Share Details</h4>
-                                  <p className="text-sm text-muted-foreground">The number of shares you own and the current market price per share.</p>
-                                  <p className="text-sm font-medium text-blue-600">Shares: Your ownership stake in the company. Price: Current market value per share.</p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-xs text-muted-foreground">
-                              Avg Cost: ${holding.weighted_buy_price ? holding.weighted_buy_price.toFixed(2) : "0.00"} • 
-                              Total Cost: ${holding.weighted_buy_price && holding.volume ? (holding.weighted_buy_price * holding.volume).toFixed(2) : "0.00"}
-                            </p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
-                                >
-                                  <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
-                                <div className="space-y-2">
-                                  <h4 className="font-semibold text-foreground">Cost Information</h4>
-                                  <p className="text-sm text-muted-foreground">Average Cost: The weighted average price you paid for all shares. Total Cost: The total amount you've invested in this position.</p>
-                                  <p className="text-sm font-medium text-blue-600">This helps you track your investment basis and calculate actual gains/losses.</p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
+                          <p className="text-sm text-muted-foreground">
+                            {holding.volume} shares at ${holding.price ? holding.price.toFixed(2) : "0.00"} each
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            Avg Cost: ${holding.weighted_buy_price ? holding.weighted_buy_price.toFixed(2) : "0.00"} • 
+                            Total Cost: ${holding.weighted_buy_price && holding.volume ? (holding.weighted_buy_price * holding.volume).toFixed(2) : "0.00"}
+                          </p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-3 gap-8 text-right">
                         <div>
-                          <div className="flex items-center justify-end space-x-2">
-                            <p className="text-sm text-muted-foreground">Market Value</p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
-                                >
-                                  <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
-                                <div className="space-y-2">
-                                  <h4 className="font-semibold text-foreground">Market Value</h4>
-                                  <p className="text-sm text-muted-foreground">The current total value of your position based on the current market price and number of shares you own.</p>
-                                  <p className="text-sm font-medium text-blue-600">Formula: Current Price × Number of Shares</p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
+                          <p className="text-sm text-muted-foreground">Market Value</p>
                           <p className="text-xl font-bold text-foreground">
                             ${((holding.price || 0) * (holding.volume || 0)).toLocaleString()}
                           </p>
                         </div>
                         
                         <div>
-                          <div className="flex items-center justify-end space-x-2">
-                            <p className="text-sm text-muted-foreground">Gain/Loss</p>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
-                                >
-                                  <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
-                                <div className="space-y-2">
-                                  <h4 className="font-semibold text-foreground">Gain/Loss</h4>
-                                  <p className="text-sm text-muted-foreground">The percentage change in value from your average cost to the current market price.</p>
-                                  <p className="text-sm font-medium text-blue-600">Green: You're making money. Red: You're losing money. This is unrealized until you sell.</p>
-                                </div>
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
+                          <p className="text-sm text-muted-foreground">Gain/Loss</p>
                           <p className={`text-xl font-bold ${(holding.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                             {(holding.change || 0).toFixed(2)}%
                           </p>
