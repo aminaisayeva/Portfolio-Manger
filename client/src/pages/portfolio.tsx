@@ -40,6 +40,11 @@ export function Portfolio() {
     setModalType(null);
   };
 
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -120,11 +125,6 @@ export function Portfolio() {
   const startIndex = (currentPage - 1) * holdingsPerPage;
   const endIndex = startIndex + holdingsPerPage;
   const currentHoldings = filteredHoldings.slice(startIndex, endIndex);
-
-  // Reset to first page when search changes
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
 
   return (
     <TooltipProvider>

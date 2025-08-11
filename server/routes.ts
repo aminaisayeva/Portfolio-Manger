@@ -590,11 +590,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const symbols = portfolio.map(p => p.symbol);
       const stockData = await stockService.getMultipleStocks(symbols);
 
-      const analysis = await aiService.analyzePortfolio(portfolio, stockData);
+      const analysis = await aiService.getPortfolioAnalysis(portfolio, stockData);
       res.json({ analysis });
     } catch (error) {
       console.error("AI analysis error:", error);
       res.status(500).json({ message: "Failed to analyze portfolio" });
+    }
+  });
+
+  // Get investment education on specific topics
+  app.get("/api/ai/learn/:topic", async (req, res) => {
+    try {
+      const { topic } = req.params;
+      const decodedTopic = decodeURIComponent(topic);
+      
+      const education = await aiService.getInvestmentEducation(decodedTopic);
+      res.json({ education });
+    } catch (error) {
+      console.error("AI education error:", error);
+      res.status(500).json({ message: "Failed to get educational content" });
+    }
+  });
+
+  // Get market education
+  app.get("/api/ai/market-education", async (req, res) => {
+    try {
+      const education = await aiService.getMarketEducation();
+      res.json({ education });
+    } catch (error) {
+      console.error("Market education error:", error);
+      res.status(500).json({ message: "Failed to get market education" });
     }
   });
 
@@ -644,6 +669,150 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Chat history error:", error);
       res.status(500).json({ message: "Failed to fetch chat history" });
+    }
+  });
+
+  // Export transactions - integrates with Flask backend
+  app.get("/api/export/transactions", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/export/transactions');
+        if (response.ok) {
+          const exportData = await response.json();
+          return res.json(exportData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available for export transactions, using fallback');
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      const userId = DEFAULT_USER_ID;
+      const transactions = await storage.getUserTransactions(userId);
+      
+      const formattedTransactions = transactions.map(t => ({
+        id: t.id,
+        symbol: t.symbol,
+        companyName: t.companyName,
+        sector: 'Technology', // Mock sector
+        industry: 'Software', // Mock industry
+        quantity: t.shares,
+        price: parseFloat(t.price),
+        type: t.type.toUpperCase(),
+        date: t.date,
+        totalAmount: parseFloat(t.totalAmount)
+      }));
+
+      res.json({
+        success: true,
+        data: formattedTransactions,
+        count: formattedTransactions.length,
+        exportDate: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Export transactions error:", error);
+      res.status(500).json({ error: "Failed to export transactions" });
+    }
+  });
+
+  // Export holdings - integrates with Flask backend
+  app.get("/api/export/holdings", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/export/holdings');
+        if (response.ok) {
+          const exportData = await response.json();
+          return res.json(exportData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available for export holdings, using fallback');
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      const userId = DEFAULT_USER_ID;
+      const portfolio = await storage.getUserPortfolio(userId);
+      const symbols = portfolio.map(p => p.symbol);
+      const stockData = await stockService.getMultipleStocks(symbols);
+      
+      const formattedHoldings = portfolio.map(position => {
+        const currentStock = stockData.find(s => s.symbol === position.symbol);
+        const currentPrice = currentStock?.price || parseFloat(position.averagePrice);
+        const quantity = position.shares;
+        const avgPrice = parseFloat(position.averagePrice);
+        const marketValue = currentPrice * quantity;
+        const costBasis = avgPrice * quantity;
+        const gainLoss = marketValue - costBasis;
+        const gainLossPercent = costBasis > 0 ? (gainLoss / costBasis * 100) : 0;
+
+        return {
+          symbol: position.symbol,
+          name: position.companyName,
+          sector: 'Technology', // Mock sector
+          industry: 'Software', // Mock industry
+          quantity: quantity,
+          avgPrice: avgPrice,
+          currentPrice: currentPrice,
+          marketValue: marketValue,
+          costBasis: costBasis,
+          gainLoss: gainLoss,
+          gainLossPercent: gainLossPercent
+        };
+      });
+
+      const totalValue = formattedHoldings.reduce((sum, h) => sum + h.marketValue, 0);
+      const totalCost = formattedHoldings.reduce((sum, h) => sum + h.costBasis, 0);
+      const totalGainLoss = totalValue - totalCost;
+      const totalGainLossPercent = totalCost > 0 ? (totalGainLoss / totalCost * 100) : 0;
+
+      res.json({
+        success: true,
+        data: formattedHoldings,
+        summary: {
+          totalValue: totalValue,
+          totalCost: totalCost,
+          totalGainLoss: totalGainLoss,
+          totalGainLossPercent: totalGainLossPercent,
+          numberOfPositions: formattedHoldings.length,
+          exportDate: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error("Export holdings error:", error);
+      res.status(500).json({ error: "Failed to export holdings" });
+    }
+  });
+
+  // Export full portfolio - integrates with Flask backend
+  app.get("/api/export/full-portfolio", async (req, res) => {
+    try {
+      // First try to fetch from Flask backend
+      try {
+        const response = await fetch('http://localhost:8000/api/export/full-portfolio');
+        if (response.ok) {
+          const exportData = await response.json();
+          return res.json(exportData);
+        }
+      } catch (flaskError) {
+        console.log('Flask backend not available for full portfolio export, using fallback');
+      }
+
+      // Fallback to mock data if Flask backend is not available
+      const userId = DEFAULT_USER_ID;
+      const user = await storage.getUser(userId);
+      const portfolio = await storage.getUserPortfolio(userId);
+      const transactions = await storage.getUserTransactions(userId);
+      
+      // This would be a simplified version - in practice you'd want to implement
+      // the full portfolio analytics logic here
+      res.json({
+        success: true,
+        message: "Full portfolio export not available in fallback mode",
+        exportDate: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Full portfolio export error:", error);
+      res.status(500).json({ error: "Failed to export full portfolio" });
     }
   });
 

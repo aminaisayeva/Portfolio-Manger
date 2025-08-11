@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Bot, Send, TrendingUp, Lightbulb } from "lucide-react";
+import { Bot, Send, TrendingUp, Lightbulb, BookOpen, GraduationCap, Target, Shield, ChartLine } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -44,7 +44,7 @@ export function AIChat() {
     },
     onSuccess: (data) => {
       // Add analysis to chat
-      chatMutation.mutate("Analyze my portfolio");
+      chatMutation.mutate("Please analyze my portfolio and teach me about portfolio management principles");
     },
     onError: () => {
       toast({
@@ -67,6 +67,10 @@ export function AIChat() {
     }
   };
 
+  const handleLearningTopic = (topic: string) => {
+    chatMutation.mutate(`Please teach me about ${topic} for first-time investors`);
+  };
+
   return (
     <div className="bg-navy-800 rounded-xl p-6 card-glow-purple sticky top-24">
       <div className="flex items-center space-x-3 mb-6">
@@ -74,8 +78,8 @@ export function AIChat() {
           <Bot className="text-white w-5 h-5" />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-white">AI Portfolio Advisor</h2>
-          <p className="text-sm text-slate-400">Get insights and recommendations</p>
+          <h2 className="text-lg font-bold text-white">AI Investment Educator</h2>
+          <p className="text-sm text-slate-400">Learn about investing principles</p>
         </div>
       </div>
 
@@ -88,8 +92,8 @@ export function AIChat() {
             </div>
             <div className="bg-navy-900 rounded-lg p-3 flex-1">
               <p className="text-sm text-slate-200">
-                Hello! I'm   AI portfolio advisor. Ask me anything about   investments, 
-                market trends, or get personalized recommendations for   portfolio.
+                Hello! I'm your AI investment educator. I'm here to teach you about investment principles, 
+                portfolio management, and financial concepts. Ask me anything about investing fundamentals!
               </p>
             </div>
           </div>
@@ -133,7 +137,7 @@ export function AIChat() {
       <div className="relative mb-4">
         <Input
           type="text"
-          placeholder="Ask about   portfolio..."
+          placeholder="Ask about investment principles..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyPress={handleKeyPress}
@@ -150,6 +154,53 @@ export function AIChat() {
         </Button>
       </div>
 
+      {/* Learning Topics */}
+      <div className="mb-4">
+        <h3 className="text-sm font-medium text-slate-300 mb-2">Popular Learning Topics:</h3>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleLearningTopic("diversification")}
+            disabled={chatMutation.isPending}
+            className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700 text-xs"
+          >
+            <Target className="h-3 w-3 mr-1" />
+            Diversification
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleLearningTopic("risk management")}
+            disabled={chatMutation.isPending}
+            className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700 text-xs"
+          >
+            <Shield className="h-3 w-3 mr-1" />
+            Risk Management
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleLearningTopic("long-term investing")}
+            disabled={chatMutation.isPending}
+            className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700 text-xs"
+          >
+            <ChartLine className="h-3 w-3 mr-1" />
+            Long-term Strategy
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleLearningTopic("asset allocation")}
+            disabled={chatMutation.isPending}
+            className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700 text-xs"
+          >
+            <BookOpen className="h-3 w-3 mr-1" />
+            Asset Allocation
+          </Button>
+        </div>
+      </div>
+
       {/* Quick Actions */}
       <div className="grid grid-cols-2 gap-2">
         <Button
@@ -160,17 +211,17 @@ export function AIChat() {
           className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700"
         >
           <TrendingUp className="w-4 h-4 mr-1" />
-          Analyze Portfolio
+          Learn Portfolio
         </Button>
         <Button
           size="sm"
           variant="outline"
-          onClick={() => chatMutation.mutate("What are some good investment recommendations for my portfolio?")}
+          onClick={() => chatMutation.mutate("What are the most important principles for first-time investors to understand?")}
           disabled={chatMutation.isPending}
           className="bg-navy-900 border-navy-700 text-slate-300 hover:bg-navy-700"
         >
-          <Lightbulb className="w-4 h-4 mr-1" />
-          Get Recommendations
+          <GraduationCap className="w-4 h-4 mr-1" />
+          First Steps
         </Button>
       </div>
     </div>

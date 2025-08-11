@@ -145,10 +145,10 @@ export function FloatingAIChat() {
                 <Bot className="w-4 h-4" />
               </div>
               <div>
-                <CardTitle className="text-sm font-semibold">AI Investment Advisor</CardTitle>
+                <CardTitle className="text-sm font-semibold">AI Investment Educator</CardTitle>
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs opacity-95 font-medium">Online</span>
+                  <span className="text-xs opacity-95 font-medium">Learning</span>
                 </div>
               </div>
             </div>
@@ -182,7 +182,7 @@ export function FloatingAIChat() {
                     <Bot className="w-8 h-8 text-white" />
                   </div>
                   <p className="text-slate-300 text-sm leading-relaxed">
-                    Hi! I'm your AI investment advisor. Ask me about your portfolio, market trends, or investment strategies.
+                    Hi! I'm your AI investment educator. I'm here to teach you about investment principles, portfolio management, and financial concepts. Ask me anything about investing fundamentals!
                   </p>
                 </div>
               )}
@@ -237,7 +237,7 @@ export function FloatingAIChat() {
                 <Input
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Ask about your portfolio..."
+                  placeholder="Ask about investment principles..."
                   disabled={chatMutation.isPending}
                   className="flex-1 bg-slate-700 border-slate-600 text-slate-100 placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500"
                 />
