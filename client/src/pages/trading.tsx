@@ -10,6 +10,7 @@ import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
 import { TrendingUp, TrendingDown, Search, Filter, Calendar, DollarSign, BarChart3, Clock, X } from "lucide-react";
 import { format } from "date-fns";
 import { BuySellModal } from "@/components/portfolio/buy-sell-modal";
+
 interface StockData {
   symbol: string;
   companyName: string;

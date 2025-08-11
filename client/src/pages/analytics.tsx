@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { TrendingUp, TrendingDown, Target, PieChart as PieChartIcon, BarChart3, Activity, Star, Calendar, DollarSign } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, ResponsiveContainer, AreaChart, Area, Tooltip as RechartsTooltip } from 'recharts';
+import { TrendingUp, TrendingDown, Target, PieChart as PieChartIcon, BarChart3, Activity, Star, Calendar, DollarSign, HelpCircle } from "lucide-react";
 
 // Custom styles for enhanced chart interactions
 const chartStyles = `
@@ -50,6 +51,82 @@ export function Analytics() {
     queryKey: ['/api/portfolio'],
     refetchInterval: 30000
   });
+
+  // Tooltip content for different metrics
+  const metricTooltips = {
+    sectorAllocation: {
+      title: "Sector Allocation",
+      description: "Shows how your portfolio is distributed across different industry sectors like Technology, Healthcare, Finance, etc. This helps you understand your exposure to different parts of the economy.",
+      goodBad: "Good: 5-8 sectors with no single sector >30%. Bad: Over 50% in one sector.",
+      firstTimeInfo: "💡 For first-time investors: Diversification across sectors reduces risk. If one industry struggles, others may perform well. Aim to spread your money across different sectors rather than putting everything in one area."
+    },
+    monthlyReturns: {
+      title: "Monthly Returns vs S&P 500",
+      description: "Compares your portfolio's monthly performance against the S&P 500 benchmark. The S&P 500 represents the 500 largest US companies and is considered the 'market average'.",
+      goodBad: "Good: Consistently outperforming benchmark. Bad: Consistently underperforming by >5%.",
+      firstTimeInfo: "💡 For first-time investors: The S&P 500 is your benchmark - it's what you're trying to beat. If you consistently underperform, consider index funds. Outperforming means you're doing better than the average investor."
+    },
+    topPerformers: {
+      title: "Top Performers",
+      description: "Your best-performing stocks that have generated the highest returns. These contribute most to your portfolio gains and show which investments are working well.",
+      goodBad: "Good: Diversified top performers across sectors. Bad: All top performers from same sector.",
+      firstTimeInfo: "💡 For first-time investors: Celebrate your winners, but don't get overconfident. Past performance doesn't guarantee future results. Consider taking some profits if a stock has grown significantly."
+    },
+    underPerformers: {
+      title: "Underperformers",
+      description: "Stocks that have declined in value. These need attention to decide if you should hold, sell, or buy more at lower prices.",
+      goodBad: "Good: Limited underperformers (<20% of portfolio). Bad: Many underperformers or large losses.",
+      firstTimeInfo: "💡 For first-time investors: Don't panic sell! Review why the stock declined. If the company fundamentals are still strong, it might be a buying opportunity. If not, consider cutting losses."
+    },
+    correlation: {
+      title: "Asset Correlation Matrix",
+      description: "Shows how closely your portfolio moves with major market indices. Lower correlation means better diversification and reduced risk.",
+      goodBad: "Good: Correlation <0.3. Bad: Correlation >0.7 (high correlation with market).",
+      firstTimeInfo: "💡 For first-time investors: Correlation measures how assets move together. Low correlation (closer to 0) is good - it means when one investment falls, others may rise, reducing overall risk."
+    },
+    performanceSummary: {
+      title: "Performance Summary",
+      description: "Shows your portfolio's total return, benchmark comparison, and outperformance over the selected timeframe. This is your overall report card.",
+      goodBad: "Good: Outperforming benchmark. Bad: Underperforming by >5%.",
+      firstTimeInfo: "💡 For first-time investors: This is your portfolio's report card. Compare it to the S&P 500 to see if you're beating the market average. Remember, long-term performance matters more than short-term results."
+    },
+    totalreturn: {
+      title: "Total Return",
+      description: "The complete return on your investment including price changes and any dividends received. This is your actual profit or loss.",
+      goodBad: "Good: Positive returns. Bad: Negative returns.",
+      firstTimeInfo: "💡 For first-time investors: Total return includes both price gains/losses AND dividends. A stock might lose value but still pay dividends, reducing your total loss."
+    },
+    annualizedreturn: {
+      title: "Annualized Return",
+      description: "Your return converted to an annual rate, making it easier to compare different time periods. Shows what you'd earn if the same rate continued for a full year.",
+      goodBad: "Good: Higher than inflation (usually >3%). Bad: Below inflation rate.",
+      firstTimeInfo: "💡 For first-time investors: This converts your actual returns to an annual percentage. If you earned 6% in 6 months, your annualized return would be 12%."
+    },
+    sharperatio: {
+      title: "Sharpe Ratio",
+      description: "Measures risk-adjusted returns. Higher values mean better returns relative to the risk taken. A ratio above 1.0 is considered good.",
+      goodBad: "Good: ≥1.0. Bad: <0.5.",
+      firstTimeInfo: "💡 For first-time investors: This measures how much return you get for the risk you take. Higher is better, but don't obsess over it. Focus on consistent, positive returns first."
+    },
+    portfoliobeta: {
+      title: "Portfolio Beta",
+      description: "Measures how volatile your portfolio is compared to the market. Beta >1 means more volatile than market, <1 means less volatile.",
+      goodBad: "Good: 0.8-1.2 (balanced risk). Bad: >1.5 (very high risk).",
+      firstTimeInfo: "💡 For first-time investors: Beta tells you how 'wild' your portfolio is compared to the market. Beta of 1.0 means it moves with the market. Higher beta = more risk and potential reward."
+    },
+    volatility: {
+      title: "Volatility",
+      description: "Measures how much your portfolio value fluctuates. Lower volatility means more stable, predictable returns.",
+      goodBad: "Good: <15% annually. Bad: >25% annually.",
+      firstTimeInfo: "💡 For first-time investors: Volatility measures how much your portfolio jumps around. Lower is usually better for beginners. High volatility can be stressful and lead to emotional decisions."
+    },
+    alpha: {
+      title: "Alpha",
+      description: "Excess return above what the market would predict based on your portfolio's risk level. Positive alpha means you're outperforming expectations.",
+      goodBad: "Good: Positive alpha. Bad: Negative alpha.",
+      firstTimeInfo: "💡 For first-time investors: Alpha measures your 'skill' as an investor. Positive alpha means you're beating the market after accounting for risk. This is what professional investors strive for."
+    }
+  };
 
   // Filter data based on selected timeframe
   const getFilteredData = () => {
@@ -335,11 +412,12 @@ export function Analytics() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <style dangerouslySetInnerHTML={{ __html: chartStyles }} />
-      <Navigation />
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <style dangerouslySetInnerHTML={{ __html: chartStyles }} />
+        <Navigation />
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -366,13 +444,39 @@ export function Analytics() {
           </div>
 
           {/* Timeframe Performance Summary */}
-          <Card className="bg-card border-border">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
-                <span>Performance Summary ({timeframe})</span>
-              </CardTitle>
-            </CardHeader>
+                                  <Card className="bg-card border-border">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="w-5 h-5" />
+                    <span>Performance Summary ({timeframe})</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Performance Summary tooltip clicked');
+                        }}
+                      >
+                        <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{metricTooltips.performanceSummary.title}</h4>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.performanceSummary.description}</p>
+                        <p className="text-sm font-medium text-blue-600">{metricTooltips.performanceSummary.goodBad}</p>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.performanceSummary.firstTimeInfo}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </CardTitle>
+              </CardHeader>
             <CardContent>
               {monthlyReturns.length > 0 ? (
                 <div className="space-y-4">
@@ -405,13 +509,46 @@ export function Analytics() {
             </CardContent>
           </Card>
 
-          {/* Performance Metrics Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Performance Metrics Section */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-foreground">Performance Metrics</h2>
+                                    
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {performanceMetrics.map((metric, index) => (
               <Card key={index} className="bg-card border-border hover:border-blue-500/30 transition-all">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">{metric.metric}</h3>
+                    <div className="flex items-center space-x-2">
+                      <h3 className="text-sm font-medium text-muted-foreground">{metric.metric}</h3>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0 hover:bg-muted/50 relative z-10"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log(`${metric.metric} tooltip clicked`);
+                            }}
+                          >
+                            <HelpCircle className="h-4 w-4 text-blue-400 hover:text-blue-300" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground">{metricTooltips[metric.metric.toLowerCase().replace(/\s+/g, '') as keyof typeof metricTooltips]?.title || metric.metric}</h4>
+                            <p className="text-sm text-muted-foreground">{metricTooltips[metric.metric.toLowerCase().replace(/\s+/g, '') as keyof typeof metricTooltips]?.description || 'Metric description not available.'}</p>
+                            <p className="text-sm font-medium text-blue-600">{metricTooltips[metric.metric.toLowerCase().replace(/\s+/g, '') as keyof typeof metricTooltips]?.goodBad || 'Good/Bad indicators not available.'}</p>
+                            <p className="text-sm text-muted-foreground">{metricTooltips[metric.metric.toLowerCase().replace(/\s+/g, '') as keyof typeof metricTooltips]?.firstTimeInfo || 'First-time investor information not available.'}</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     {metric.status === 'positive' ? (
                       <TrendingUp className="w-4 h-4 text-green-400" />
                     ) : metric.status === 'negative' ? (
@@ -431,15 +568,49 @@ export function Analytics() {
               </Card>
             ))}
           </div>
+          </div>
 
           {/* Charts Row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-foreground">Portfolio Charts</h2>
+                                      
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Sector Allocation */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <PieChartIcon className="w-5 h-5" />
-                  <span>Sector Allocation</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <PieChartIcon className="w-5 h-5" />
+                    <span>Sector Allocation</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Sector Allocation tooltip clicked');
+                        }}
+                      >
+                        <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{metricTooltips.sectorAllocation.title}</h4>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.sectorAllocation.description}</p>
+                        <p className="text-sm font-medium text-blue-600">{metricTooltips.sectorAllocation.goodBad}</p>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.sectorAllocation.firstTimeInfo}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -481,7 +652,7 @@ export function Analytics() {
                           />
                         ))}
                       </Pie>
-                      <Tooltip 
+                      <RechartsTooltip 
                         formatter={(value: number, name: string, props: any) => [
                             `${props.payload.value}% ($${props.payload.amount.toLocaleString()})`,
                           props.payload.name
@@ -532,9 +703,35 @@ export function Analytics() {
             {/* Monthly Returns vs Benchmark */}
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <BarChart3 className="w-5 h-5" />
-                  <span>Returns vs S&P 500 ({timeframe})</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <BarChart3 className="w-5 h-5" />
+                    <span>Returns vs S&P 500 ({timeframe})</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Monthly Returns tooltip clicked');
+                        }}
+                      >
+                        <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{metricTooltips.monthlyReturns.title}</h4>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.monthlyReturns.description}</p>
+                        <p className="text-sm font-medium text-blue-600">{metricTooltips.monthlyReturns.goodBad}</p>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.monthlyReturns.firstTimeInfo}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -555,7 +752,7 @@ export function Analytics() {
                         tickLine={false}
                         tickFormatter={(value) => `${value}%`}
                       />
-                      <Tooltip 
+                      <RechartsTooltip 
                           content={({ active, payload, label }: any) => {
                             if (active && payload && payload.length) {
                               const portfolioData = payload.find((p: any) => p.name === 'Portfolio');
@@ -609,7 +806,7 @@ export function Analytics() {
                           }}
                         />
                         <Bar 
-                          dataKey="returns" 
+                          dataKey="returns"  
                           fill="#8b5cf6" 
                           name="Portfolio"
                           radius={[4, 4, 0, 0]}
@@ -657,16 +854,48 @@ export function Analytics() {
               </CardContent>
             </Card>
           </div>
-
-
+          </div>
 
           {/* Top & Bottom Performers */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-foreground">Stock Performance</h2>
+                                      
+              </div>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Star className="w-5 h-5 text-green-400" />
-                  <span>Top Performers</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Star className="w-5 h-5 text-green-400" />
+                    <span>Top Performers</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Top Performers tooltip clicked');
+                        }}
+                      >
+                        <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{metricTooltips.topPerformers.title}</h4>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.topPerformers.description}</p>
+                        <p className="text-sm font-medium text-blue-600">{metricTooltips.topPerformers.goodBad}</p>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.topPerformers.firstTimeInfo}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -693,9 +922,35 @@ export function Analytics() {
 
             <Card className="bg-card border-border">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingDown className="w-5 h-5 text-red-400" />
-                  <span>Underperformers</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <TrendingDown className="w-5 h-5 text-red-400" />
+                    <span>Underperformers</span>
+                  </div>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          console.log('Underperformers tooltip clicked');
+                        }}
+                      >
+                        <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                      <div className="space-y-2">
+                        <h4 className="font-semibold text-foreground">{metricTooltips.underPerformers.title}</h4>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.underPerformers.description}</p>
+                        <p className="text-sm font-medium text-blue-600">{metricTooltips.underPerformers.goodBad}</p>
+                        <p className="text-sm text-muted-foreground">{metricTooltips.underPerformers.firstTimeInfo}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -720,13 +975,47 @@ export function Analytics() {
               </CardContent>
             </Card>
           </div>
+          </div>
 
           {/* Correlation Matrix */}
-          <Card className="bg-card border-border">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <h2 className="text-2xl font-bold text-foreground">Risk Analysis</h2>
+                                      
+              </div>
+            </div>
+            <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Activity className="w-5 h-5" />
-                <span>Asset Correlation Matrix ({timeframe})</span>
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Activity className="w-5 h-5" />
+                  <span>Asset Correlation Matrix ({timeframe})</span>
+                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('Correlation Matrix tooltip clicked');
+                      }}
+                    >
+                      <HelpCircle className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" className="max-w-xs bg-background border-2 border-blue-200 shadow-lg">
+                    <div className="space-y-2">
+                      <h4 className="font-semibold text-foreground">{metricTooltips.correlation.title}</h4>
+                      <p className="text-sm text-muted-foreground">{metricTooltips.correlation.description}</p>
+                      <p className="text-sm font-medium text-blue-600">{metricTooltips.correlation.goodBad}</p>
+                      <p className="text-sm text-muted-foreground">{metricTooltips.correlation.firstTimeInfo}</p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -837,10 +1126,12 @@ export function Analytics() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
       </div>
 
       <FloatingAIChat />
     </div>
+      </TooltipProvider>
   );
 }

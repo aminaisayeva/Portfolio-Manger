@@ -1,3 +1,6 @@
+import { Card, CardContent } from "@/components/ui/card";
+
+
 export function PortfolioAnalytics() {
   // Mock analytics data
   const analytics = {
@@ -28,11 +31,15 @@ export function PortfolioAnalytics() {
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">YTD Return</span>
-          <span className="text-green-400 font-semibold">+{analytics.ytdReturn}%</span>
+          <span className="font-semibold text-green-400">
+            +{analytics.ytdReturn.toFixed(2)}%
+          </span>
         </div>
         <div className="flex justify-between items-center">
           <span className="text-muted-foreground">Max Drawdown</span>
-          <span className="text-red-400 font-semibold">{analytics.maxDrawdown}%</span>
+          <span className="font-semibold text-red-400">
+            {analytics.maxDrawdown.toFixed(2)}%
+          </span>
         </div>
       </div>
 

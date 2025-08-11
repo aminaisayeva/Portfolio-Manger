@@ -1,6 +1,8 @@
 import { Plus, Wallet, DollarSign, TrendingUp, PieChart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PortfolioSummary } from "@shared/schema";
+import { Card, CardContent } from "@/components/ui/card";
+
 
 interface PortfolioHeaderProps {
   summary: PortfolioSummary;
@@ -51,7 +53,7 @@ export function PortfolioHeader({ summary, onBuyClick, onAddFundsClick }: Portfo
               <DollarSign className="text-white w-6 h-6" />
             </div>
             <span className={`text-sm font-medium ${summary.totalGainPercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {formatPercentage(summary.totalGainPercent)}
+              {summary.totalGainPercent >= 0 ? '+' : ''}{summary.totalGainPercent.toFixed(2)}%
             </span>
           </div>
           <div className="text-2xl font-bold text-foreground mb-1">{formatCurrency(summary.totalValue)}</div>
@@ -64,11 +66,11 @@ export function PortfolioHeader({ summary, onBuyClick, onAddFundsClick }: Portfo
               <TrendingUp className="text-white w-6 h-6" />
             </div>
             <span className={`text-sm font-medium ${summary.dayGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-              {formatCurrency(summary.dayGain)}
+              {summary.dayGain >= 0 ? '+' : ''}${Math.abs(summary.dayGain).toLocaleString()}
             </span>
           </div>
           <div className={`text-2xl font-bold mb-1 ${summary.dayGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(summary.dayGain)}
+            {summary.dayGain >= 0 ? '+' : ''}${Math.abs(summary.dayGain).toLocaleString()}
           </div>
           <div className="text-muted-foreground text-sm">Today's Gain/Loss</div>
         </div>
@@ -81,7 +83,7 @@ export function PortfolioHeader({ summary, onBuyClick, onAddFundsClick }: Portfo
             <span className="text-blue-400 text-sm font-medium">Assets</span>
           </div>
           <div className={`text-2xl font-bold mb-1 ${summary.totalGain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-            {formatCurrency(summary.totalGain)}
+            {summary.totalGain >= 0 ? '+' : ''}${Math.abs(summary.totalGain).toLocaleString()}
           </div>
           <div className="text-muted-foreground text-sm">Total Gain/Loss</div>
         </div>

@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { PortfolioChart } from "@/components/portfolio/portfolio-chart";
 import { BuySellModal } from "@/components/portfolio/buy-sell-modal";
 import { AddFundsModal } from "@/components/portfolio/add-funds-modal";
-import { TrendingUp, TrendingDown, DollarSign, Target, Eye, Plus } from "lucide-react";
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  DollarSign, 
+  Target, 
+  Activity,
+  BarChart3,
+  Globe,
+  ArrowUpRight,
+  ArrowDownRight,
+  Info
+} from "lucide-react";
 import { Link } from "wouter";
+
 
 export default function Dashboard() {
   const [selectedStock, setSelectedStock] = useState<{symbol: string, price: number, companyName: string} | null>(null);
@@ -74,10 +87,11 @@ export default function Dashboard() {
   const bestToken = (portfolioData as any)?.bestToken;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -89,7 +103,7 @@ export default function Dashboard() {
                 onClick={() => setShowAddFunds(true)}
                 className="gradient-green text-white"
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <ArrowUpRight className="w-4 h-4 mr-2" />
                 Add Funds
               </Button>
             </div>
@@ -106,7 +120,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Value</p>
                     <p className="text-2xl font-bold text-foreground">
-                      ${portfolioSummary.totalValue ? portfolioSummary.totalValue.toLocaleString() : "0.00"}
+                      ${(portfolioSummary.totalValue || 0).toLocaleString()}
                     </p>
                     <p className="text-xs text-muted-foreground">Holdings + Cash</p>
                   </div>
@@ -121,16 +135,15 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
                     {(portfolioSummary.totalGainPercent || 0) >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-green-400" />
+                      <ArrowUpRight className="w-5 h-5 text-green-400" />
                     ) : (
-                      <TrendingDown className="w-5 h-5 text-red-400" />
+                      <ArrowDownRight className="w-5 h-5 text-red-400" />
                     )}
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Total Return</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(portfolioSummary.totalGainPercent || 0) >= 0 ? '+' : ''}
-                      {portfolioSummary.totalGainPercent ? portfolioSummary.totalGainPercent.toFixed(2) : "0.00"}%
+                      {(portfolioSummary.totalGainPercent || 0).toFixed(2)}%
                     </p>
                     <p className="text-xs text-muted-foreground">Since Inception</p>
                   </div>
@@ -147,7 +160,7 @@ export default function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Cash Balance</p>
                     <p className="text-2xl font-bold text-foreground">
-                      ${portfolioSummary.cashBalance ? portfolioSummary.cashBalance.toLocaleString() : "0.00"}
+                      ${(portfolioSummary.cashBalance || 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -160,16 +173,41 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${(portfolioSummary.realizedGains || 0) >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
                     {(portfolioSummary.realizedGains || 0) >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-emerald-400" />
+                      <ArrowUpRight className="w-5 h-5 text-emerald-400" />
                     ) : (
-                      <TrendingDown className="w-5 h-5 text-red-400" />
+                      <ArrowDownRight className="w-5 h-5 text-red-400" />
                     )}
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Realized Gains</p>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm text-muted-foreground">Realized Gains</p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Realized Gains tooltip clicked');
+                            }}
+                          >
+                            <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-emerald-200 shadow-lg" style={{ transform: 'translateX(-20px)' }}>
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground">Realized Gains</h4>
+                            <p className="text-sm text-muted-foreground">Profits (or losses) from completed trades where you've actually sold your investments. These are the gains you've locked in and can spend.</p>
+                            <p className="text-sm font-medium text-emerald-600">Good: Positive realized gains mean your trading strategy is working. Bad: Negative realized gains mean you're selling at a loss.</p>
+                            <p className="text-sm text-muted-foreground">💡 For first-time investors: Realized gains are your actual profits from completed trades. Unlike unrealized gains, these are real money you can use. Focus on building a track record of positive realized gains over time.</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <p className={`text-2xl font-bold ${(portfolioSummary.realizedGains || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                      ${(portfolioSummary.realizedGains || 0) >= 0 ? '+' : ''}
-                      {portfolioSummary.realizedGains ? portfolioSummary.realizedGains.toFixed(2) : "0.00"}
+                      ${(portfolioSummary.realizedGains || 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -182,16 +220,41 @@ export default function Dashboard() {
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${(portfolioSummary.unrealizedGains || 0) >= 0 ? 'bg-cyan-500/20' : 'bg-red-500/20'}`}>
                     {(portfolioSummary.unrealizedGains || 0) >= 0 ? (
-                      <TrendingUp className="w-5 h-5 text-cyan-400" />
-                    ) : (
-                      <TrendingDown className="w-5 h-5 text-red-400" />
-                    )}
+                      <ArrowUpRight className="w-5 h-5 text-cyan-400" />
+                      ) : (
+                        <ArrowDownRight className="w-5 h-5 text-red-400" />
+                      )}
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Unrealized Gains</p>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm text-muted-foreground">Unrealized Gains</p>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-4 w-4 p-0 hover:bg-muted/50 relative z-10"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              console.log('Unrealized Gains tooltip clicked');
+                            }}
+                          >
+                            <Info className="h-3 w-3 text-blue-400 hover:text-blue-300" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={5} className="max-w-xs bg-background border-2 border-blue-200 shadow-lg" style={{ transform: 'translateX(-20px)' }}>
+                          <div className="space-y-2">
+                            <h4 className="font-semibold text-foreground">Unrealized Gains</h4>
+                            <p className="text-sm text-muted-foreground">Potential profits (or losses) from investments you still own. These gains aren't real until you sell - they can go up or down with market changes.</p>
+                            <p className="text-sm font-medium text-blue-600">Good: Growing unrealized gains show your investments are performing. Bad: Large unrealized losses may need attention.</p>
+                            <p className="text-sm text-muted-foreground">💡 For first-time investors: Unrealized gains are 'paper profits' - they look good but aren't guaranteed. Don't get too excited about gains until you sell. Focus on long-term trends rather than daily fluctuations.</p>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
                     <p className={`text-2xl font-bold ${(portfolioSummary.unrealizedGains || 0) >= 0 ? 'text-cyan-400' : 'text-red-400'}`}>
-                      ${(portfolioSummary.unrealizedGains || 0) >= 0 ? '+' : ''}
-                      {portfolioSummary.unrealizedGains ? portfolioSummary.unrealizedGains.toFixed(2) : "0.00"}
+                      ${(portfolioSummary.unrealizedGains || 0).toLocaleString()}
                     </p>
                   </div>
                 </div>
@@ -208,7 +271,7 @@ export default function Dashboard() {
               <CardTitle className="text-xl font-bold text-foreground">Your Holdings</CardTitle>
               <Link href="/portfolio">
                 <Button variant="ghost" size="sm" className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
-                  <Eye className="w-4 h-4 mr-2" />
+                  <Globe className="w-4 h-4 mr-2" />
                   View All
                 </Button>
               </Link>
@@ -236,11 +299,11 @@ export default function Dashboard() {
                       <p className="text-lg font-semibold text-foreground">${((holding.price || 0) * (holding.volume || 0)).toLocaleString()}</p>
                       <p className={`text-sm flex items-center ${(holding.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {(holding.change || 0) >= 0 ? (
-                          <TrendingUp className="w-3 h-3 mr-1" />
+                          <ArrowUpRight className="w-4 h-4 mr-1" />
                         ) : (
-                          <TrendingDown className="w-3 h-3 mr-1" />
+                          <ArrowDownRight className="w-4 h-4 mr-1" />
                         )}
-                        {(holding.change || 0) >= 0 ? '+' : ''}{holding.change ? holding.change.toFixed(2) : "0.00"}%
+                        {Math.abs(holding.change || 0).toFixed(2)}%
                       </p>
                     </div>
                     <div className="flex space-x-2">
@@ -299,6 +362,7 @@ export default function Dashboard() {
       />
 
       <FloatingAIChat />
-    </div>
+        </div>
+      </TooltipProvider>
   );
 }
