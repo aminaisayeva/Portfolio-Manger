@@ -113,10 +113,10 @@ export function BuySellModal({
     }
 
     const shares = parseInt(formData.shares);
-    if (shares <= 0) {
+    if (shares <= 0 || !Number.isInteger(shares)) {
       toast({
         title: "Error",
-        description: "Please enter a valid number of shares",
+        description: "Please enter a valid whole number of shares greater than 0",
         variant: "destructive"
       });
       return;
@@ -131,6 +131,20 @@ export function BuySellModal({
         toast({
           title: "Insufficient Funds",
           description: `You need $${totalCost.toFixed(2)} but only have $${cashBalance.toFixed(2)} available`,
+          variant: "destructive"
+        });
+        return;
+      }
+    }
+
+    // Check if user has enough shares for sell orders
+    if (formData.type === 'sell') {
+      const currentSharesOwned = getCurrentSharesOwned(formData.symbol);
+      
+      if (shares > currentSharesOwned) {
+        toast({
+          title: "Insufficient Shares",
+          description: `You only own ${currentSharesOwned} shares of ${formData.symbol}, but trying to sell ${shares} shares`,
           variant: "destructive"
         });
         return;
@@ -156,6 +170,16 @@ export function BuySellModal({
     const cashFromRoot = (portfolioData as any)?.cashBalance;
     
     return cashFromSummary || cashFromRoot || 0;
+  };
+
+  // Helper function to get current shares owned for a specific symbol
+  const getCurrentSharesOwned = (symbol: string) => {
+    if (!portfolioData || !symbol) return 0;
+    
+    const assets = (portfolioData as any)?.assets || [];
+    const holding = assets.find((asset: any) => asset.symbol === symbol);
+    
+    return holding ? (holding.volume || 0) : 0;
   };
 
   return (
@@ -201,11 +225,18 @@ export function BuySellModal({
               type="number"
               placeholder="10"
               min="1"
+              step="1"
+              max={formData.type === 'sell' ? getCurrentSharesOwned(formData.symbol) : undefined}
               value={formData.shares}
               onChange={(e) => setFormData(prev => ({ ...prev, shares: e.target.value }))}
               className="bg-background border-border text-foreground placeholder-muted-foreground"
               required
             />
+            {formData.type === 'sell' && formData.symbol && (
+              <p className="text-sm text-muted-foreground mt-2">
+                You currently own <span className="font-medium text-foreground">{getCurrentSharesOwned(formData.symbol)} shares</span> of {formData.symbol}
+              </p>
+            )}
           </div>
           
           {estimatedCost > 0 && (
@@ -229,6 +260,16 @@ export function BuySellModal({
                     estimatedCost > getCashBalance() ? 'text-red-400' : 'text-green-400'
                   }`}>
                     ${getCashBalance().toFixed(2)}
+                  </span>
+                </div>
+              )}
+              {formData.type === 'sell' && (
+                <div className="flex justify-between items-center text-sm mt-2 pt-2 border-t border-border">
+                  <span className="text-muted-foreground">Shares Owned</span>
+                  <span className={`font-semibold ${
+                    parseInt(formData.shares || '0') > getCurrentSharesOwned(formData.symbol) ? 'text-red-400' : 'text-green-400'
+                  }`}>
+                    {getCurrentSharesOwned(formData.symbol)}
                   </span>
                 </div>
               )}
