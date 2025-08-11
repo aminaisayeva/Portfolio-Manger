@@ -19,7 +19,6 @@ import {
   DollarSign, 
   Activity,
   Download,
-  Trash2,
   Save,
   Eye,
   EyeOff
@@ -165,13 +164,7 @@ export function Settings() {
     });
   };
 
-  const exportData = () => {
-    // Mock data export
-    toast({
-      title: "Export Started",
-      description: "Your data export will be ready shortly"
-    });
-  };
+
 
 
 
@@ -735,51 +728,7 @@ export function Settings() {
                   </div>
                 </div>
 
-                <Separator />
-                
-                {/* Account Data Export */}
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-foreground text-lg mb-2">Account Data Export</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Export your account information and preferences.
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h5 className="font-medium text-foreground">Export Account Data</h5>
-                      <p className="text-sm text-muted-foreground">Download a copy of all your account data and settings</p>
-                    </div>
-                    <Button onClick={exportData} variant="outline">
-                      <Download className="w-4 h-4 mr-2" />
-                      Export Account
-                    </Button>
-                  </div>
-                </div>
-                
-                <Separator />
-                
-                {/* Delete Account Section */}
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium text-foreground text-lg mb-2">Danger Zone</h4>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      Irreversible and destructive actions.
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h5 className="font-medium text-foreground text-red-400">Delete Account</h5>
-                      <p className="text-sm text-muted-foreground">Permanently delete your account and all data</p>
-                    </div>
-                    <Button variant="destructive">
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Account
-                    </Button>
-                  </div>
-                </div>
+
               </CardContent>
             </Card>
           </div>
