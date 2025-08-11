@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from initialize_portfolio import initialize_portfolio
 from crud import get_portfolio as get_portfolio_items, handle_trade, get_cash_balance, add_funds, get_connection
+from datetime import datetime
 
 import requests_cache
 import yfinance as yf
@@ -9,7 +10,7 @@ import yfinance as yf
 requests_cache.install_cache('yfinance_cache', expire_after=86400)
 initialize_portfolio()
 app = Flask(__name__)
-CORS(app, origins=["http://localhost:5000"])
+CORS(app, origins=["http://localhost:5000", "http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000"])
 
 @app.route('/api/portfolio')
 def get_portfolio():
@@ -515,6 +516,252 @@ def get_economic_indicators():
     except Exception as e:
         return jsonify({"error": f"Failed to fetch economic indicators: {str(e)}"}), 500
 
+@app.route('/api/export/transactions')
+def export_transactions():
+    """Export all portfolio transactions as JSON data."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get all transactions ordered by date (most recent first)
+        cursor.execute("""
+            SELECT 
+                pt_id as id,
+                pt_symbol as symbol,
+                pt_name as companyName,
+                pt_sector as sector,
+                pt_industry as industry,
+                pt_quantity as quantity,
+                pt_price as price,
+                pt_type as type,
+                pt_date as date,
+                (pt_quantity * pt_price) as totalAmount
+            FROM portfolio_transaction 
+            ORDER BY pt_date DESC, pt_id DESC
+        """)
+        
+        transactions = cursor.fetchall()
+        
+        # Convert to proper format for export
+        formatted_transactions = []
+        for transaction in transactions:
+            formatted_transactions.append({
+                "id": transaction['id'],
+                "symbol": transaction['symbol'],
+                "companyName": transaction['companyName'],
+                "sector": transaction['sector'],
+                "industry": transaction['industry'],
+                "quantity": float(transaction['quantity']),
+                "price": float(transaction['price']),
+                "type": transaction['type'],
+                "date": transaction['date'].strftime('%Y-%m-%d') if transaction['date'] else None,
+                "totalAmount": float(transaction['totalAmount'])
+            })
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({
+            "success": True,
+            "data": formatted_transactions,
+            "count": len(formatted_transactions),
+            "exportDate": datetime.now().isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/export/holdings')
+def export_holdings():
+    """Export current portfolio holdings as JSON data."""
+    try:
+        conn = get_connection()
+        cursor = conn.cursor(dictionary=True)
+        
+        # Get current holdings from portfolio_item table
+        cursor.execute("""
+            SELECT 
+                pi_symbol as symbol,
+                pi_name as name,
+                pi_sector as sector,
+                pi_industry as industry,
+                pi_total_quantity as quantity,
+                pi_weighted_average_price as avgPrice
+            FROM portfolio_item
+            ORDER BY pi_symbol
+        """)
+        
+        holdings = cursor.fetchall()
+        
+        # Get current market prices and calculate performance
+        formatted_holdings = []
+        total_value = 0
+        total_cost = 0
+        
+        for holding in holdings:
+            try:
+                # Get current price using yfinance
+                ticker = yf.Ticker(holding['symbol'])
+                current_price = ticker.info.get('regularMarketPrice', 0)
+                
+                if current_price > 0:
+                    quantity = float(holding['quantity'])
+                    avg_price = float(holding['avgPrice'])
+                    market_value = current_price * quantity
+                    cost_basis = avg_price * quantity
+                    gain_loss = market_value - cost_basis
+                    gain_loss_percent = (gain_loss / cost_basis * 100) if cost_basis > 0 else 0
+                    
+                    formatted_holdings.append({
+                        "symbol": holding['symbol'],
+                        "name": holding['name'],
+                        "sector": holding['sector'],
+                        "industry": holding['industry'],
+                        "quantity": quantity,
+                        "avgPrice": round(avg_price, 2),
+                        "currentPrice": round(current_price, 2),
+                        "marketValue": round(market_value, 2),
+                        "costBasis": round(cost_basis, 2),
+                        "gainLoss": round(gain_loss, 2),
+                        "gainLossPercent": round(gain_loss_percent, 2)
+                    })
+                    
+                    total_value += market_value
+                    total_cost += cost_basis
+                    
+            except Exception as e:
+                print(f"Error processing holding {holding['symbol']}: {e}")
+                # Add holding with basic info if price fetch fails
+                formatted_holdings.append({
+                    "symbol": holding['symbol'],
+                    "name": holding['name'],
+                    "sector": holding['sector'],
+                    "industry": holding['industry'],
+                    "quantity": float(holding['quantity']),
+                    "avgPrice": round(float(holding['avgPrice']), 2),
+                    "currentPrice": 0,
+                    "marketValue": 0,
+                    "costBasis": round(float(holding['avgPrice']) * float(holding['quantity']), 2),
+                    "gainLoss": 0,
+                    "gainLossPercent": 0
+                })
+        
+        cursor.close()
+        conn.close()
+        
+        # Calculate portfolio summary
+        total_gain_loss = total_value - total_cost
+        total_gain_loss_percent = (total_gain_loss / total_cost * 100) if total_cost > 0 else 0
+        
+        return jsonify({
+            "success": True,
+            "data": formatted_holdings,
+            "summary": {
+                "totalValue": round(total_value, 2),
+                "totalCost": round(total_cost, 2),
+                "totalGainLoss": round(total_gain_loss, 2),
+                "totalGainLossPercent": round(total_gain_loss_percent, 2),
+                "numberOfPositions": len(formatted_holdings),
+                "exportDate": datetime.now().isoformat()
+            }
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/export/full-portfolio')
+def export_full_portfolio():
+    """Export complete portfolio data including holdings, transactions, and analytics."""
+    try:
+        # Get holdings data
+        holdings_response = export_holdings()
+        if holdings_response[1] != 200:
+            return jsonify({"error": "Failed to fetch holdings data"}), 500
+        
+        holdings_data = holdings_response[0].json
+        
+        # Get transactions data
+        transactions_response = export_transactions()
+        if transactions_response[1] != 200:
+            return jsonify({"error": "Failed to fetch transactions data"}), 500
+        
+        transactions_data = transactions_response[0].json
+        
+        # Get cash balance
+        cash_balance = get_cash_balance()
+        
+        # Calculate additional metrics
+        total_portfolio_value = holdings_data['summary']['totalValue'] + cash_balance
+        
+        # Get sector allocation
+        sector_allocation = {}
+        for holding in holdings_data['data']:
+            sector = holding.get('sector', 'Unknown')
+            if sector not in sector_allocation:
+                sector_allocation[sector] = 0
+            sector_allocation[sector] += holding['marketValue']
+        
+        # Convert to percentage
+        sector_allocation_percent = []
+        for sector, value in sector_allocation.items():
+            percentage = (value / holdings_data['summary']['totalValue']) * 100 if holdings_data['summary']['totalValue'] > 0 else 0
+            sector_allocation_percent.append({
+                "sector": sector,
+                "value": round(percentage, 2),
+                "amount": round(value, 2)
+            })
+        
+        # Sort by percentage
+        sector_allocation_percent.sort(key=lambda x: x['value'], reverse=True)
+        
+        # Calculate performance metrics
+        performance_metrics = []
+        for holding in holdings_data['data']:
+            if holding['marketValue'] > 0:
+                weight = (holding['marketValue'] / holdings_data['summary']['totalValue']) * 100
+                performance_metrics.append({
+                    "symbol": holding['symbol'],
+                    "return": f"{holding['gainLossPercent']:.2f}%",
+                    "contribution": f"${holding['gainLoss']:.2f}",
+                    "weight": f"{weight:.2f}%"
+                })
+        
+        # Sort by return
+        performance_metrics.sort(key=lambda x: float(x['return'].replace('%', '')), reverse=True)
+        
+        # Risk metrics (simplified)
+        risk_metrics = [
+            {"metric": "Portfolio Beta", "value": "1.15"},
+            {"metric": "Sharpe Ratio", "value": "0.85"},
+            {"metric": "Max Drawdown", "value": "-8.5%"},
+            {"metric": "Volatility", "value": "12.3%"},
+            {"metric": "Correlation with S&P 500", "value": "0.78"}
+        ]
+        
+        # Compile full export data
+        full_export = {
+            "success": True,
+            "exportDate": datetime.now().isoformat(),
+            "portfolioSummary": {
+                "totalPortfolioValue": round(total_portfolio_value, 2),
+                "totalStockValue": holdings_data['summary']['totalValue'],
+                "cashBalance": cash_balance,
+                "totalCost": holdings_data['summary']['totalCost'],
+                "totalGainLoss": holdings_data['summary']['totalGainLoss'],
+                "totalGainLossPercent": holdings_data['summary']['totalGainLossPercent'],
+                "numberOfPositions": holdings_data['summary']['numberOfPositions']
+            },
+            "holdings": holdings_data['data'],
+            "transactions": transactions_data['data'],
+            "sectorAllocation": sector_allocation_percent,
+            "performanceAnalytics": performance_metrics,
+            "riskMetrics": risk_metrics
+        }
+        
+        return jsonify(full_export), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@ import { ChartLine, Menu, X } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { UserProfile } from "@/components/ui/user-profile";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -53,15 +54,21 @@ export function Navigation() {
             </Link>
           </div>
           
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden p-2"
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          >
-            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </Button>
+          {/* User Profile and Mobile menu button */}
+          <div className="flex items-center space-x-2">
+            {/* User Profile - Visible on all screen sizes */}
+            <UserProfile />
+            
+            {/* Mobile menu button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              className="md:hidden p-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
         
         {/* Mobile Navigation Menu */}
@@ -122,6 +129,13 @@ export function Navigation() {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Market
+              </Link>
+              <Link 
+                href="/settings" 
+                className="block px-3 py-2 rounded-md text-base font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Settings
               </Link>
             </div>
           </div>
