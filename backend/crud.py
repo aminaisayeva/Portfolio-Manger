@@ -286,7 +286,7 @@ def get_portfolio(orderBy, numEntries=None):
         # Calculate total initial investment
         # From data.sql, initial deposit was $25,000
         # All stock purchases came from this initial cash
-        total_initial_investment = 25000
+        total_initial_investment = get_total_deposits()
         
         # Calculate profit/loss including cash balance
         profit_loss = total_value - total_initial_investment
@@ -350,11 +350,16 @@ def get_portfolio(orderBy, numEntries=None):
             conn.close()
         # Return fallback data on error
         cash_balance = get_cash_balance()
+        total_deposits = get_total_deposits()
+        total_value = cash_balance + 12000
+        profit_loss = total_value - total_deposits
+        total_return_percent = round((profit_loss / total_deposits) * 100, 2) if total_deposits > 0 else 0
+        
         return {
-            "totalValue": cash_balance + 12000,
-            "profitLoss": 500,
+            "totalValue": total_value,
+            "profitLoss": profit_loss,
             "unrealizedGains": 500,
-            "totalReturnPercent": 4.17,  # 500/12000 * 100
+            "totalReturnPercent": total_return_percent,
             "cashBalance": cash_balance,
             "assets": []
         }
@@ -520,3 +525,32 @@ def add_funds(amount, ca_id=1):
             "transaction_id": transaction_id,
             "amount_added": amount
         }
+
+
+def get_total_deposits(ca_id=1):
+    """Calculate total deposits from cash_transaction table."""
+    conn = get_connection()
+    if conn is None:
+        # Return initial deposit when database is not available
+        return 25000.0
+
+    try:
+        cursor = conn.cursor(dictionary=True)
+        
+        # Sum all DEPOSIT transactions
+        cursor.execute(
+            "SELECT SUM(ct_amount) as total_deposits FROM cash_transaction WHERE ct_type = 'DEPOSIT' AND ct_ca_id = %s",
+            (ca_id,)
+        )
+        result = cursor.fetchone()
+        total_deposits = float(result['total_deposits']) if result and result['total_deposits'] else 25000.0
+        
+        cursor.close()
+        conn.close()
+        
+        return total_deposits
+    except Exception as e:
+        print(f"Error getting total deposits: {e}")
+        if conn:
+            conn.close()
+        return 25000.0
