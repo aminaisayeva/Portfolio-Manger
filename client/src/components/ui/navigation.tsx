@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { UserProfile } from "@/components/ui/user-profile";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function Navigation() {
   const [location] = useLocation();
@@ -54,8 +55,11 @@ export function Navigation() {
             </Link>
           </div>
           
-          {/* User Profile and Mobile menu button */}
+          {/* User Profile, Theme Toggle, and Mobile menu button */}
           <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
             {/* User Profile - Visible on all screen sizes */}
             <UserProfile />
             
