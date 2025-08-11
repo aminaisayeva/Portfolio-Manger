@@ -60,24 +60,24 @@
 
 .light {
   --background: hsl(0, 0%, 100%);
-  --foreground: hsl(20, 14.3%, 4.1%);
-  --muted: hsl(60, 4.8%, 95.9%);
-  --muted-foreground: hsl(25, 5.3%, 44.7%);
+  --foreground: hsl(220, 15%, 8%);
+  --muted: hsl(210, 20%, 96%);
+  --muted-foreground: hsl(220, 9%, 46%);
   --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(20, 14.3%, 4.1%);
+  --popover-foreground: hsl(220, 15%, 8%);
   --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(20, 14.3%, 4.1%);
-  --border: hsl(20, 5.9%, 90%);
-  --input: hsl(20, 5.9%, 90%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(211, 100%, 99%);
-  --secondary: hsl(60, 4.8%, 95.9%);
-  --secondary-foreground: hsl(24, 9.8%, 10%);
-  --accent: hsl(60, 4.8%, 95.9%);
-  --accent-foreground: hsl(24, 9.8%, 10%);
-  --destructive: hsl(0, 84.2%, 60.2%);
-  --destructive-foreground: hsl(60, 9.1%, 97.8%);
-  --ring: hsl(20, 14.3%, 4.1%);
+  --card-foreground: hsl(220, 15%, 8%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(221, 83%, 53%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 20%, 96%);
+  --secondary-foreground: hsl(220, 15%, 8%);
+  --accent: hsl(210, 20%, 96%);
+  --accent-foreground: hsl(220, 15%, 8%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(221, 83%, 53%);
   --radius: 0.5rem;
 }
 
@@ -149,5 +149,300 @@
   
   .navy-700 {
     background-color: hsl(215, 27.9%, 16.9%);
+  }
+
+  /* Light theme specific utilities for better readability - only affecting light theme */
+  .light .card {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid hsl(214, 32%, 91%);
+  }
+
+  .light .card:hover {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  }
+
+  .light .bg-muted\/50 {
+    background-color: hsl(210, 20%, 96%);
+  }
+
+  .light .bg-muted\/30 {
+    background-color: hsl(210, 20%, 94%);
+  }
+
+  .light .border-border {
+    border-color: hsl(214, 32%, 91%);
+  }
+
+  .light .text-muted-foreground {
+    color: hsl(220, 9%, 46%);
+  }
+
+  .light .bg-background {
+    background-color: hsl(0, 0%, 100%);
+  }
+
+  .light .text-foreground {
+    color: hsl(220, 15%, 8%);
+  }
+
+  /* Enhanced light theme improvements - only for light theme */
+  .light .bg-white\/50 {
+    background-color: rgba(255, 255, 255, 0.8);
+  }
+
+  .light .border-border\/50 {
+    border-color: hsl(214, 32%, 85%);
+  }
+
+  .light .hover\:border-blue-300:hover {
+    border-color: hsl(217, 91%, 60%);
+  }
+
+  .light .hover\:border-green-300:hover {
+    border-color: hsl(142, 76%, 36%);
+  }
+
+  .light .shadow-sm {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .light .shadow-md {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .light .shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Light theme specific icon and button improvements */
+  .light .text-blue-400 {
+    color: hsl(217, 91%, 60%);
+  }
+
+  .light .text-green-400 {
+    color: hsl(142, 76%, 36%);
+  }
+
+  .light .text-red-400 {
+    color: hsl(0, 72%, 51%);
+  }
+
+  .light .text-purple-400 {
+    color: hsl(262, 83%, 58%);
+  }
+
+  .light .text-orange-400 {
+    color: hsl(25, 95%, 53%);
+  }
+
+  .light .text-cyan-400 {
+    color: hsl(187, 75%, 40%);
+  }
+
+  .light .text-emerald-400 {
+    color: hsl(160, 84%, 39%);
+  }
+
+  /* Light theme specific hover states */
+  .light .hover\:bg-muted\/80:hover {
+    background-color: hsl(210, 20%, 92%);
+  }
+
+  .light .hover\:border-blue-200:hover {
+    border-color: hsl(214, 95%, 93%);
+  }
+
+  .light .hover\:shadow-xl:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Light theme specific card and component improvements */
+  .light .hover\:border-blue-500\/30:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  .light .hover\:border-green-500\/30:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  .light .bg-green-500\/10 {
+    background-color: rgba(16, 185, 129, 0.1);
+  }
+
+  .light .bg-blue-500\/10 {
+    background-color: rgba(59, 130, 246, 0.1);
+  }
+
+  .light .bg-purple-500\/10 {
+    background-color: rgba(139, 92, 246, 0.1);
+  }
+
+  .light .bg-orange-500\/10 {
+    background-color: rgba(245, 158, 11, 0.1);
+  }
+
+  .light .bg-red-500\/10 {
+    background-color: rgba(239, 68, 68, 0.1);
+  }
+
+  .light .bg-cyan-500\/10 {
+    background-color: rgba(6, 182, 212, 0.1);
+  }
+
+  .light .bg-emerald-500\/10 {
+    background-color: rgba(16, 185, 129, 0.1);
+  }
+
+  /* Light theme specific text improvements */
+  .light .text-green-600 {
+    color: hsl(142, 76%, 36%);
+  }
+
+  .light .text-red-600 {
+    color: hsl(0, 72%, 51%);
+  }
+
+  .light .text-blue-600 {
+    color: hsl(217, 91%, 60%);
+  }
+
+  .light .text-purple-600 {
+    color: hsl(262, 83%, 58%);
+  }
+
+  .light .text-orange-600 {
+    color: hsl(25, 95%, 53%);
+  }
+
+  .light .text-cyan-600 {
+    color: hsl(187, 75%, 40%);
+  }
+
+  .light .text-emerald-600 {
+    color: hsl(160, 84%, 39%);
+  }
+
+  /* Light theme specific background improvements */
+  .light .bg-blue-500\/20 {
+    background-color: rgba(59, 130, 246, 0.2);
+  }
+
+  .light .bg-green-500\/20 {
+    background-color: rgba(16, 185, 129, 0.2);
+  }
+
+  .light .bg-red-500\/20 {
+    background-color: rgba(239, 68, 68, 0.2);
+  }
+
+  .light .bg-purple-500\/20 {
+    background-color: rgba(139, 92, 246, 0.2);
+  }
+
+  .light .bg-orange-500\/20 {
+    background-color: rgba(245, 158, 11, 0.2);
+  }
+
+  .light .bg-cyan-500\/20 {
+    background-color: rgba(6, 182, 212, 0.2);
+  }
+
+  .light .bg-emerald-500\/20 {
+    background-color: rgba(16, 185, 129, 0.2);
+  }
+
+  /* Light theme specific additional improvements */
+  .light .text-blue-400 {
+    color: hsl(217, 91%, 60%);
+  }
+
+  .light .text-green-400 {
+    color: hsl(142, 76%, 36%);
+  }
+
+  .light .text-red-400 {
+    color: hsl(0, 72%, 51%);
+  }
+
+  .light .text-purple-400 {
+    color: hsl(262, 83%, 58%);
+  }
+
+  .light .text-orange-400 {
+    color: hsl(25, 95%, 53%);
+  }
+
+  .light .text-cyan-400 {
+    color: hsl(187, 75%, 40%);
+  }
+
+  .light .text-emerald-400 {
+    color: hsl(160, 84%, 39%);
+  }
+
+  /* Light theme specific hover improvements */
+  .light .hover\:bg-muted\/80:hover {
+    background-color: hsl(210, 20%, 92%);
+  }
+
+  .light .hover\:border-blue-200:hover {
+    border-color: hsl(214, 95%, 93%);
+  }
+
+  .light .hover\:shadow-xl:hover {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  }
+
+  /* Light theme specific card improvements */
+  .light .hover\:border-blue-500\/30:hover {
+    border-color: rgba(59, 130, 246, 0.3);
+  }
+
+  .light .hover\:border-green-500\/30:hover {
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Light theme specific market page improvements */
+  .light .border-2 {
+    border-width: 2px;
+  }
+
+  .light .hover\:shadow-lg:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .light .hover\:shadow-sm:hover {
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .light .hover\:border-border\/50:hover {
+    border-color: hsl(214, 32%, 85%);
+  }
+
+  /* Light theme specific market card improvements */
+  .light .bg-muted\/30 {
+    background-color: hsl(210, 20%, 94%);
+  }
+
+  .light .border-border\/50 {
+    border-color: hsl(214, 32%, 85%);
+  }
+
+  .light .hover\:border-border:hover {
+    border-color: hsl(214, 32%, 91%);
+  }
+
+  /* Light theme main card background improvements */
+  .light .bg-card {
+    background-color: hsl(210, 20%, 97%) !important; /* Override default card background in light mode */
+  }
+
+  /* Light theme specific color overrides for better readability */
+  .light .text-green-400 {
+    color: hsl(142, 76%, 36%) !important; /* text-green-600 equivalent */
+  }
+
+  .light .text-red-400 {
+    color: hsl(0, 72%, 51%) !important; /* text-red-600 equivalent */
   }
 }

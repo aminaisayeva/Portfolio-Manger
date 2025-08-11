@@ -277,12 +277,12 @@ export function Settings() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className="w-16 h-16 gradient-blue rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 gradient-blue rounded-full flex items-center justify-center shadow-lg">
                     <span className="text-white text-xl font-bold">{getInitials(profileData.name)}</span>
                   </div>
                   <div>
                     <h3 className="text-lg font-medium text-foreground">{profileData.name}</h3>
-                    <p className="text-sm text-muted-foreground">Premium Member</p>
+                    <p className="text-sm text-muted-foreground font-medium">Premium Member</p>
                   </div>
                 </div>
 
@@ -350,24 +350,24 @@ export function Settings() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {/* Transactions Export */}
-                    <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border hover:shadow-md transition-shadow">
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
-                          <Download className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                        <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center shadow-sm">
+                          <Download className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                         </div>
                         <div>
-                          <h5 className="font-medium text-foreground">Transaction History</h5>
-                          <p className="text-xs text-muted-foreground">Buy/sell records</p>
+                          <h5 className="font-semibold text-foreground">Transaction History</h5>
+                          <p className="text-xs text-muted-foreground font-medium">Buy/sell records</p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                         Export all your trading transactions including dates, symbols, quantities, prices, and fees.
                       </p>
                       <Button 
                         onClick={() => exportPortfolioData('transactions')} 
                         variant="outline" 
                         size="sm"
-                        className="w-full"
+                        className="w-full border-2 hover:border-blue-300"
                         disabled={exportLoading.transactions}
                       >
                         {exportLoading.transactions ? "Exporting..." : <Download className="w-4 h-4 mr-2" />}
@@ -376,24 +376,24 @@ export function Settings() {
                     </div>
 
                     {/* Holdings Export */}
-                    <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border hover:shadow-md transition-shadow">
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
-                          <Download className="w-5 h-5 text-green-600 dark:text-green-400" />
+                        <div className="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center shadow-sm">
+                          <Download className="w-5 h-5 text-green-700 dark:text-green-400" />
                         </div>
                         <div>
-                          <h5 className="font-medium text-foreground">Portfolio Holdings</h5>
-                          <p className="text-xs text-muted-foreground">Current positions</p>
+                          <h5 className="font-semibold text-foreground">Portfolio Holdings</h5>
+                          <p className="text-xs text-muted-foreground font-medium">Current positions</p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                         Export your current portfolio holdings with quantities, market values, and performance metrics.
                       </p>
                       <Button 
                         onClick={() => exportPortfolioData('holdings')} 
                         variant="outline" 
                         size="sm"
-                        className="w-full"
+                        className="w-full border-2 hover:border-green-300"
                         disabled={exportLoading.holdings}
                       >
                         {exportLoading.holdings ? "Exporting..." : <Download className="w-4 h-4 mr-2" />}
@@ -402,17 +402,17 @@ export function Settings() {
                     </div>
 
                     {/* Full Export */}
-                    <div className="bg-muted/50 rounded-lg p-4 border border-border">
+                    <div className="bg-muted/50 rounded-lg p-4 border border-border hover:shadow-md transition-shadow">
                       <div className="flex items-center space-x-3 mb-3">
-                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
-                          <Download className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center shadow-sm">
+                          <Download className="w-5 h-5 text-purple-700 dark:text-purple-400" />
                         </div>
                         <div>
-                          <h5 className="font-medium text-foreground">Full Portfolio Data</h5>
-                          <p className="text-xs text-muted-foreground">Complete export</p>
+                          <h5 className="font-semibold text-foreground">Full Portfolio Data</h5>
+                          <p className="text-xs text-muted-foreground font-medium">Complete export</p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-3">
+                      <p className="text-sm text-muted-foreground mb-3 leading-relaxed">
                         Comprehensive export with multiple Excel tabs including all portfolio data, transactions, and analytics.
                       </p>
                       <Button 
@@ -429,31 +429,31 @@ export function Settings() {
 
                   {/* Full Export Details */}
                   <div className="bg-muted/30 rounded-lg p-4 border border-border">
-                    <h5 className="font-medium text-foreground mb-3">Full Export Includes:</h5>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                        <span className="text-muted-foreground">General Portfolio Summary</span>
+                    <h5 className="font-semibold text-foreground mb-4 text-lg">Full Export Includes:</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-blue-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">General Portfolio Summary</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                        <span className="text-muted-foreground">Current Holdings & Positions</span>
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-green-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">Current Holdings & Positions</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                        <span className="text-muted-foreground">Transaction History</span>
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-yellow-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">Transaction History</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                        <span className="text-muted-foreground">Performance Analytics</span>
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-purple-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">Performance Analytics</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                        <span className="text-muted-foreground">Dividend History</span>
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-red-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">Dividend History</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                        <span className="text-muted-foreground">Risk Metrics & Analysis</span>
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                        <div className="w-3 h-3 bg-indigo-600 rounded-full shadow-sm"></div>
+                        <span className="text-foreground font-medium">Risk Metrics & Analysis</span>
                       </div>
                     </div>
                   </div>
@@ -483,17 +483,17 @@ export function Settings() {
           <div className="flex gap-6">
             {/* Left Sidebar - Navigation Tabs */}
             <div className="w-56 flex-shrink-0">
-              <div className="bg-card border border-border rounded-lg p-3 space-y-1">
+              <div className="bg-card border border-border rounded-lg p-3 space-y-1 shadow-sm">
                 {tabItems.map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-left transition-all duration-200 ${
                         activeTab === tab.id
-                          ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/80 hover:shadow-sm"
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -512,7 +512,7 @@ export function Settings() {
         </div>
       </div>
 
-      <FloatingAIChat />
+  
     </div>
   );
 }

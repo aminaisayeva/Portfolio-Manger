@@ -136,73 +136,81 @@ export function Portfolio() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-4xl font-bold text-foreground">Portfolio</h1>
-              <p className="text-xl text-muted-foreground mt-2">Detailed view of all   holdings</p>
+              <p className="text-xl text-muted-foreground mt-2">Detailed view of all holdings</p>
             </div>
           </div>
 
           {/* Portfolio Summary */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-sm text-muted-foreground font-medium">Total Value</p>
                     <p className="text-2xl font-bold text-foreground">
                       ${portfolioSummary.totalValue ? portfolioSummary.totalValue.toLocaleString() : "0.00"}
                     </p>
                   </div>
-                  <DollarSign className="w-8 h-8 text-blue-400" />
+                  <div className="p-2 rounded-lg bg-blue-500/20 shadow-sm">
+                    <DollarSign className="w-6 h-6 text-blue-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Gain/Loss</p>
+                    <p className="text-sm text-muted-foreground font-medium">Total Gain/Loss</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       ${Math.abs(portfolioSummary.totalGain || 0).toLocaleString()}
                     </p>
                   </div>
-                  {(portfolioSummary.totalGain || 0) >= 0 ? (
-                    <TrendingUp className="w-8 h-8 text-green-400" />
-                  ) : (
-                    <TrendingDown className="w-8 h-8 text-red-400" />
-                  )}
+                  <div className={`p-2 rounded-lg shadow-sm ${(portfolioSummary.totalGain || 0) >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                    {(portfolioSummary.totalGain || 0) >= 0 ? (
+                      <TrendingUp className="w-6 h-6 text-green-400" />
+                    ) : (
+                      <TrendingDown className="w-6 h-6 text-red-400" />
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Return</p>
+                    <p className="text-sm text-muted-foreground font-medium">Total Return</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {(portfolioSummary.totalGainPercent || 0).toFixed(2)}%
                     </p>
                   </div>
-                  <Percent className="w-8 h-8 text-purple-400" />
+                  <div className="p-2 rounded-lg bg-purple-500/20 shadow-sm">
+                    <Percent className="w-6 h-6 text-purple-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-card border-border">
+            <Card className="bg-card border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Holdings Count</p>
+                    <p className="text-sm text-muted-foreground font-medium">Holdings Count</p>
                     <p className="text-2xl font-bold text-foreground">{holdings.length}</p>
                   </div>
-                  <Target className="w-8 h-8 text-orange-400" />
+                  <div className="p-2 rounded-lg bg-orange-500/20 shadow-sm">
+                    <Target className="w-6 h-6 text-orange-600" />
+                  </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
           {/* Search and Filter */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="relative flex-1">
@@ -238,7 +246,7 @@ export function Portfolio() {
           </Card>
 
           {/* Holdings Table */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-xl font-bold text-foreground">
@@ -433,7 +441,7 @@ export function Portfolio() {
         />
       )}
 
-      <FloatingAIChat />
+      
         </div>
       </TooltipProvider>
   );

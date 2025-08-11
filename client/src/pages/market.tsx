@@ -161,11 +161,11 @@ export function Market() {
           {/* Market Indices */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {marketIndices.map((index: any, i: number) => (
-              <Card key={i} className="bg-card border-border hover:border-blue-500/30 transition-all">
+              <Card key={i} className="bg-card border-border hover:border-blue-500/30 transition-all hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <h3 className="font-semibold text-foreground">{index.name}</h3>
-                    <Badge variant="outline" className="text-xs">
+                    <Badge variant="outline" className="text-xs border-2">
                       {index.symbol}
                     </Badge>
                   </div>
@@ -193,7 +193,7 @@ export function Market() {
           </div>
 
           {/* Market Performance Chart */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border hover:shadow-lg transition-shadow bg-muted/10">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Activity className="w-5 h-5" />
@@ -272,7 +272,7 @@ export function Market() {
           </Card>
 
           {/* Economic Indicators */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border hover:shadow-lg transition-shadow bg-muted/10">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <Globe className="w-5 h-5" />
@@ -286,7 +286,7 @@ export function Market() {
               {economicIndicators.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {economicIndicators.map((indicator, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background">
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-all border border-border/50 hover:border-border hover:shadow-sm">
                       <div>
                         <div className="font-medium text-foreground">{indicator.name}</div>
                         <div className="text-2xl font-bold text-foreground">{indicator.value}</div>
@@ -321,7 +321,7 @@ export function Market() {
           </Card>
 
           {/* Sector Performance */}
-          <Card className="bg-card border-border">
+          <Card className="bg-card border-border hover:shadow-lg transition-shadow bg-muted/10">
             <CardHeader>
               <CardTitle className="flex items-center space-x-2">
                 <BarChart3 className="w-5 h-5" />
@@ -335,7 +335,7 @@ export function Market() {
               {(sectorData as any[]) && (sectorData as any[]).length > 0 ? (
                 <div className="space-y-4">
                   {(sectorData as any[]).map((sector: any, index: number) => (
-                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors">
+                    <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-muted/30 hover:bg-muted/50 transition-all border border-border/50 hover:border-border hover:shadow-sm">
                       <div className="flex-1">
                         <div className="font-medium text-foreground">{sector.name}</div>
                         <div className="text-sm text-muted-foreground">
@@ -378,7 +378,7 @@ export function Market() {
         </div>
       </div>
 
-      <FloatingAIChat />
+      
     </div>
   );
 }

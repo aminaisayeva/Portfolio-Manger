@@ -444,7 +444,7 @@ export function Analytics() {
           </div>
 
           {/* Timeframe Performance Summary */}
-                                  <Card className="bg-card border-border">
+                                  <Card className="bg-card border-border hover:shadow-lg transition-shadow">
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
@@ -519,7 +519,7 @@ export function Analytics() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {performanceMetrics.map((metric, index) => (
-              <Card key={index} className="bg-card border-border hover:border-blue-500/30 transition-all">
+              <Card key={index} className="bg-card border-border hover:border-blue-500/30 transition-all hover:shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-2">
@@ -1130,7 +1130,7 @@ export function Analytics() {
         </div>
       </div>
 
-      <FloatingAIChat />
+      
     </div>
       </TooltipProvider>
   );
