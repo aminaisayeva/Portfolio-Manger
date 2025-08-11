@@ -1,3 +1,8 @@
-# Ignore local environment files
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
 .env
-venv/
+venv
