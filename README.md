@@ -1,179 +1,271 @@
 # ThemisTrends - Portfolio Management System
 
-A comprehensive portfolio management and trading platform built with React, TypeScript, and Flask. ThemisTrends provides real-time market data, portfolio tracking, trading capabilities, and advanced analytics.
+A full-stack portfolio management and trading platform that gives you real-time market data, portfolio tracking, and advanced analytics. Built with React, TypeScript, and Flask, it's designed to be both powerful and user-friendly.
 
-## 🚀 Features
+## What's Inside
 
-### Core Functionality
-- **Portfolio Management**: Track holdings, gains/losses, and portfolio performance
-- **Real-time Trading**: Buy and sell stocks with live market data
-- **Market Data**: Real-time stock prices, market indices, and economic indicators
-- **Advanced Analytics**: Performance metrics, sector allocation, and correlation analysis
-- **Transaction History**: Complete trading history with filtering and pagination
+### Core Features
+- **Portfolio Management**: Keep track of your holdings, gains/losses, and overall performance
+- **Live Trading**: Buy and sell stocks with real-time market data
+- **Market Data**: Get live stock prices, market indices, and economic indicators
+- **Analytics**: Deep dive into performance metrics, sector allocation, and correlations
+- **Transaction History**: Complete trading history with search and filtering
+- **AI Assistant**: Get intelligent insights and recommendations for your portfolio
 
-### Key Features
-- **Real-time Data**: Live stock prices via yfinance API
-- **Portfolio Analytics**: Sharpe ratio, beta, volatility, and alpha calculations
-- **Market Overview**: S&P 500, NASDAQ, Dow Jones, and Russell 2000 tracking
-- **Economic Indicators**: Treasury yields, commodities, and currency data
-- **Sector Performance**: Real-time sector ETF performance tracking
-- **Responsive Design**: Mobile-friendly interface with modern UI
+### Key Highlights
+- Real-time data from Yahoo Finance
+- Advanced portfolio analytics (Sharpe ratio, beta, volatility, alpha)
+- Market overview with S&P 500, NASDAQ, Dow Jones, and Russell 2000
+- Economic indicators and sector performance tracking
+- Mobile-responsive design that works on any device
+- Dark and light mode themes
+- Real-time notifications and alerts
 
-## 🏗️ Project Structure
+## Project Structure
+
+We've built this with a dual-backend approach - you can use either Python/Flask or Node.js/Express:
 
 ```
 portfolio_manager_team15/
-├── client/                          # Frontend React application
+├── client/                          # React frontend
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── portfolio/           # Portfolio-specific components
+│   │   │   │   ├── portfolio-header.tsx
+│   │   │   │   ├── portfolio-chart.tsx
+│   │   │   │   ├── holdings-list.tsx
+│   │   │   │   ├── buy-sell-modal.tsx
+│   │   │   │   ├── add-funds-modal.tsx
+│   │   │   │   ├── ai-chat-modal.tsx
+│   │   │   │   └── recent-transactions.tsx
 │   │   │   └── ui/                  # Reusable UI components
-│   │   ├── pages/                   # Main application pages
+│   │   ├── pages/                   # Main app pages
+│   │   │   ├── dashboard.tsx        # Main dashboard
+│   │   │   ├── portfolio.tsx        # Portfolio management
+│   │   │   ├── trading.tsx          # Trading interface
+│   │   │   ├── analytics.tsx        # Advanced analytics
+│   │   │   ├── market.tsx           # Market overview
+│   │   │   └── settings.tsx         # User settings
 │   │   ├── hooks/                   # Custom React hooks
-│   │   └── lib/                     # Utility functions
-│   ├── package.json
-│   └── vite.config.ts
-├── backend/                         # Flask API server
-│   ├── app.py                       # Main Flask application
+│   │   └── lib/                     # Utilities
+│   ├── index.html
+│   └── package.json
+├── backend/                         # Python Flask API
+│   ├── app.py                       # Main Flask app
 │   ├── crud.py                      # Database operations
 │   ├── math_operations.py           # Financial calculations
+│   ├── initialize_portfolio.py      # Portfolio setup
 │   ├── requirements.txt
-│   └── db/                          # Database schema and data
-├── server/                          # Additional server components
-└── shared/                          # Shared TypeScript types
+│   ├── yfinance_cache.sqlite        # Market data cache
+│   └── db/                          # Database files
+│       ├── schema.sql               # Database schema
+│       ├── data.sql                 # Sample data
+│       ├── procedures.sql           # Stored procedures
+│       ├── triggers.sql             # Database triggers
+│       └── scheduler.sql            # Scheduled tasks
+├── server/                          # Node.js backend (optional)
+│   ├── index.ts                     # Main server
+│   ├── routes.ts                    # API routes
+│   ├── db.ts                        # Database connection
+│   ├── storage.ts                   # Data storage
+│   └── services/                    # Business logic
+│       ├── stock-service.ts         # Stock data
+│       └── ai-service.ts            # AI chat
+├── shared/                          # Shared types
+│   └── schema.ts                    # Database types
+├── package.json                     # Main package.json
+├── vite.config.ts                   # Vite config
+├── tailwind.config.ts               # Tailwind config
+├── tsconfig.json                    # TypeScript config
+└── drizzle.config.ts                # Database ORM config
 ```
 
-## 🛠️ Technology Stack
+## Tech Stack
 
 ### Frontend
-- **React 18** with TypeScript
-- **Vite** for build tooling
-- **TanStack Query** for data fetching
-- **Recharts** for data visualization
-- **Tailwind CSS** for styling
-- **Lucide React** for icons
+- React 18 with TypeScript
+- Vite for fast development and building
+- TanStack Query for data fetching and caching
+- Recharts for beautiful data visualizations
+- Tailwind CSS for styling
+- shadcn/ui for consistent UI components
+- Lucide React for icons
+- Framer Motion for smooth animations
+- React Hook Form for form handling
+- Zod for validation
 
-### Backend
-- **Flask** Python web framework
-- **MySQL** database
-- **yfinance** for market data
-- **requests-cache** for API caching
+### Backend (Python/Flask)
+- Flask 2.3.3 for the web framework
+- MySQL database with custom schema
+- yfinance for real-time market data
+- requests-cache for API caching
+- pandas for data manipulation
+- Flask-CORS for cross-origin requests
+
+### Backend (Node.js/Express) - Optional
+- Express.js web framework
+- Drizzle ORM for database operations
+- OpenAI API for AI chat functionality
+- WebSocket for real-time updates
+- Passport.js for authentication
 
 ### Database
-- **MySQL** with custom schema
-- Portfolio items, transactions, and cash balance tracking
+- MySQL with comprehensive schema
+- SQLite for caching market data
+- PostgreSQL support via Drizzle ORM
 
-## 📋 Prerequisites
+## Getting Started
 
-Before running this project, ensure you have:
+### Prerequisites
+You'll need:
+- Node.js (v18 or higher)
+- Python (v3.8 or higher)
+- MySQL database server (v8.0 or higher)
+- Git
+- npm or yarn
 
-- **Node.js** (v16 or higher)
-- **Python** (v3.8 or higher)
-- **MySQL** database server
-- **Git**
+### Installation
 
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
+1. **Clone the repo**
 ```bash
 git clone <repository-url>
 cd portfolio_manager_team15
 ```
 
-### 2. Backend Setup
-
-#### Install Python Dependencies
+2. **Set up the Python backend**
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-#### Database Setup
-1. Create a MySQL database named `portfolio_manager`
-2. Set up your database credentials in a `.env` file:
+3. **Set up the database**
+First, create a MySQL database named `portfolio_manager`, then create a `.env` file:
 ```env
 DB_PASSWORD=your_mysql_password
+DB_HOST=localhost
+DB_USER=root
+DB_NAME=portfolio_manager
 ```
 
-3. Initialize the database:
+Initialize the database:
 ```bash
-# Run the database initialization scripts
 mysql -u root -p portfolio_manager < db/master.sql
+mysql -u root -p portfolio_manager < db/schema.sql
+mysql -u root -p portfolio_manager < db/data.sql
+mysql -u root -p portfolio_manager < db/procedures.sql
+mysql -u root -p portfolio_manager < db/triggers.sql
 ```
 
-#### Start the Flask Server
+4. **Start the Flask server**
 ```bash
 python app.py
 ```
 The backend will run on `http://localhost:8000`
 
-### 3. Frontend Setup
-
-#### Install Dependencies
+5. **Set up the frontend**
 ```bash
 npm install
 ```
 
-#### Start the Development Server
+Create a `.env` file in the root directory:
+```env
+VITE_API_URL=http://localhost:8000
+VITE_WS_URL=ws://localhost:3000
+```
+
+6. **Start the development server**
 ```bash
 npm run dev
 ```
 The frontend will run on `http://localhost:5000`
 
-## 📊 Database Schema
+### Optional: Node.js Backend
+If you want to use the Node.js backend instead:
+```bash
+npm install
+export DATABASE_URL="your_database_url"
+export OPENAI_API_KEY="your_openai_api_key"
+npm run dev
+```
 
-### Key Tables
-- **portfolio_item**: Current holdings with prices and quantities
-- **portfolio_transaction**: Complete transaction history
-- **cash_account**: Cash balance management
-- **portfolio_history**: Historical portfolio values
+## Database Schema
+
+### Main Tables
+- `portfolio_item`: Your current holdings with prices and quantities
+- `portfolio_transaction`: Complete transaction history
+- `cash_account`: Cash balance management
+- `portfolio_history`: Historical portfolio values
+- `market_data`: Cached market data
+- `user_settings`: Your preferences and settings
 
 ### Sample Data
-The system comes pre-loaded with:
-- Initial $25,000 cash balance
-- Sample stock holdings (AAPL, AMZN, GOOGL, etc.)
+The system comes with:
+- $25,000 starting cash balance
+- Sample holdings (AAPL, AMZN, GOOGL, MSFT, TSLA)
 - Historical transaction data
+- Market indices data
 
-## 🎯 Usage Guide
+## How to Use
 
 ### Dashboard
-- **Portfolio Overview**: Total value, gains/losses, cash balance
-- **Performance Metrics**: Realized and unrealized gains
-- **Portfolio Chart**: Historical performance visualization
-- **Quick Actions**: Buy/sell stocks, add funds
+The main dashboard gives you a quick overview of your portfolio:
+- Total portfolio value and gains/losses
+- Cash balance
+- Portfolio performance chart
+- Quick actions for buying/selling
+- AI chat for insights
 
 ### Portfolio Page
-- **Holdings List**: All current positions with real-time prices
-- **Search & Filter**: Find specific holdings
-- **Sort Options**: Sort by value, gain/loss, shares, or symbol
-- **Pagination**: View 10 holdings per page
-- **Trading Actions**: Buy or sell directly from holdings
+Manage your holdings:
+- See all your current positions with live prices
+- Search and filter holdings by symbol or company name
+- Sort by value, gain/loss, shares, or symbol
+- Pagination for large portfolios
+- Buy or sell directly from the holdings list
+- Portfolio summary with key metrics
 
 ### Trading Center
-- **Transaction History**: Complete buy/sell history
-- **Trading Metrics**: Capital deployed, realized gains, activity stats
-- **Filtering**: Search by symbol, filter by transaction type and date
-- **Pagination**: Navigate through transaction history
+Track your trading activity:
+- Complete transaction history with advanced filtering
+- Trading metrics and statistics
+- Search by symbol, filter by transaction type and date
+- Export your transaction data
+- Pagination for large transaction histories
 
 ### Analytics
-- **Performance Metrics**: Total return, Sharpe ratio, portfolio beta, volatility, alpha
-- **Sector Allocation**: Visual breakdown of portfolio by sector
-- **Correlation Matrix**: Asset correlation analysis
-- **Timeframe Selection**: 1M, 3M, 6M, 1Y, or all-time analysis
+Deep dive into your portfolio performance:
+- Performance metrics (total return, Sharpe ratio, beta, volatility, alpha)
+- Sector allocation breakdown
+- Correlation analysis between assets
+- Timeframe selection (1M, 3M, 6M, 1Y, all-time)
+- Risk analysis and VaR calculations
+- Performance attribution
 
 ### Market Page
-- **Market Indices**: S&P 500, NASDAQ, Dow Jones, Russell 2000
-- **Market Performance**: Intraday performance charts
-- **Economic Indicators**: Treasury yields, commodities, currency data
-- **Sector Performance**: Real-time sector ETF tracking
+Stay on top of the markets:
+- Major indices (S&P 500, NASDAQ, Dow Jones, Russell 2000)
+- Intraday performance charts
+- Economic indicators and commodities
+- Sector performance tracking
+- Real-time market clock
+- Market news and updates
 
-## 🔧 API Endpoints
+### Settings
+Customize your experience:
+- Theme preferences (dark/light mode)
+- Notification settings
+- Account management
+- API configuration
+- Data export/import
+
+## API Endpoints
 
 ### Portfolio Management
-- `GET /api/portfolio` - Get portfolio data and holdings
-- `POST /api/add-funds` - Add funds to cash account
+- `GET /api/portfolio` - Get your portfolio data and holdings
+- `POST /api/add-funds` - Add money to your cash account
 - `POST /api/buy-stock` - Buy stock shares
 - `POST /api/sell-stock` - Sell stock shares
+- `POST /api/trade` - Generic trade endpoint
 
 ### Market Data
 - `GET /api/market_movers` - Major market indices
@@ -183,91 +275,191 @@ The system comes pre-loaded with:
 - `GET /api/economic_indicators` - Economic indicators
 
 ### Transactions
-- `GET /api/transactions` - Transaction history
+- `GET /api/transactions` - Your transaction history with filtering
 
-## 🎨 UI Components
+### AI Services
+- `POST /api/ai/chat` - Chat with the AI assistant
+- `GET /api/ai/insights` - Get portfolio insights
 
-### Reusable Components
-- **Navigation**: Header with logo and navigation links
-- **Cards**: Consistent card layouts for data display
-- **Charts**: Line charts, bar charts, pie charts for analytics
-- **Modals**: Buy/sell modals, add funds modal
-- **Tables**: Sortable data tables with pagination
+## UI Components
 
-### Styling
-- **Tailwind CSS**: Utility-first CSS framework
-- **Custom Gradients**: Purple and green gradient themes
-- **Responsive Design**: Mobile-first approach
-- **Dark Mode**: Built-in dark theme support
+We use shadcn/ui for consistent, beautiful components:
+- Navigation with logo and links
+- Cards for data display
+- Charts for analytics
+- Modals for trading and settings
+- Tables with sorting and pagination
+- Forms with validation
+- Buttons and tooltips
 
-## 🔄 Data Flow
+### Portfolio Components
+- PortfolioHeader: Summary and quick actions
+- PortfolioChart: Performance visualization
+- HoldingsList: Current holdings with trading
+- BuySellModal: Stock trading interface
+- AddFundsModal: Cash deposit
+- AIChatModal: AI-powered insights
+- RecentTransactions: Latest activity
 
-1. **Real-time Updates**: yfinance API provides live market data
-2. **Caching**: requests-cache reduces API calls and improves performance
-3. **State Management**: TanStack Query handles server state and caching
-4. **Database**: MySQL stores portfolio data and transaction history
-5. **Calculations**: Backend handles complex financial calculations
+## Data Flow
 
-## 🚨 Error Handling
+Here's how everything works together:
+1. Yahoo Finance provides real-time market data
+2. We cache API calls to improve performance
+3. TanStack Query manages server state and caching
+4. MySQL stores your portfolio data and transactions
+5. The backend handles complex financial calculations
+6. OpenAI provides intelligent insights
+7. WebSockets enable real-time updates
 
-- **API Failures**: Graceful fallbacks for market data
-- **Database Errors**: Proper error messages and logging
-- **Network Issues**: Retry mechanisms and offline indicators
-- **Invalid Data**: Input validation and error boundaries
+## Error Handling
 
-## 🔒 Security Considerations
+We've built robust error handling:
+- Graceful fallbacks when market data fails
+- Clear error messages and logging
+- Retry mechanisms for network issues
+- Input validation and error boundaries
+- Toast notifications for user feedback
 
-- **Input Validation**: All user inputs are validated
-- **SQL Injection Prevention**: Parameterized queries
-- **CORS Configuration**: Proper cross-origin resource sharing
-- **Environment Variables**: Sensitive data stored in .env files
+## Security
 
-## 📈 Performance Optimizations
+Security is a priority:
+- All inputs are validated with Zod
+- SQL injection prevention with parameterized queries
+- Proper CORS configuration
+- Environment variables for sensitive data
+- API rate limiting
+- XSS prevention
 
-- **API Caching**: 24-hour cache for market data
-- **Pagination**: Large datasets split into manageable chunks
-- **Lazy Loading**: Components loaded on demand
-- **Image Optimization**: Optimized icons and assets
+## Performance
 
-## 🧪 Testing
+We've optimized for speed:
+- 24-hour cache for market data
+- Pagination for large datasets
+- Lazy loading for components
+- Optimized assets and icons
+- Code splitting for better loading
+- Memoization for expensive calculations
 
-### Manual Testing Checklist
-- [ ] Portfolio data loads correctly
-- [ ] Buy/sell transactions work
-- [ ] Market data updates in real-time
-- [ ] Analytics calculations are accurate
-- [ ] Mobile responsiveness
-- [ ] Error handling works properly
+## Testing
 
-## 🐛 Troubleshooting
+### Manual Testing
+Before deploying, test:
+- Portfolio data loading
+- Buy/sell transactions
+- Real-time market updates
+- Analytics calculations
+- Mobile responsiveness
+- Error handling
+- AI chat functionality
+- Theme switching
+- Search and filtering
+- Pagination
+
+### Future Testing
+We plan to add:
+- Unit tests for components
+- Integration tests for APIs
+- End-to-end tests
+- Performance testing
+
+## Troubleshooting
 
 ### Common Issues
 
 **Backend won't start:**
-- Check MySQL connection and credentials
-- Ensure all Python dependencies are installed
-- Verify .env file exists with correct database password
+```bash
+# Check MySQL connection
+mysql -u root -p -e "SHOW DATABASES;"
+
+# Verify Python dependencies
+pip list | grep -E "(Flask|mysql-connector|yfinance)"
+
+# Check environment variables
+echo $DB_PASSWORD
+```
 
 **Frontend won't load:**
-- Check if backend is running on port 8000
-- Verify all npm dependencies are installed
-- Check browser console for errors
+```bash
+# Check if backend is running
+curl http://localhost:8000/api/portfolio
+
+# Verify npm dependencies
+npm list --depth=0
+
+# Check browser console for errors
+```
 
 **Market data not updating:**
-- Check yfinance API status
-- Verify internet connection
-- Check cache settings in backend
+```bash
+# Check yfinance API
+python -c "import yfinance as yf; print(yf.Ticker('AAPL').info['regularMarketPrice'])"
+
+# Clear cache
+rm backend/yfinance_cache.sqlite
+
+# Check internet connection
+ping api.yahoo.com
+```
 
 **Database errors:**
-- Ensure MySQL server is running
-- Verify database schema is properly initialized
-- Check database user permissions
+```bash
+# Check MySQL status
+sudo systemctl status mysql
 
-## 🤝 Contributing
+# Verify database exists
+mysql -u root -p -e "USE portfolio_manager; SHOW TABLES;"
+
+# Check user permissions
+mysql -u root -p -e "SHOW GRANTS FOR 'your_user'@'localhost';"
+```
+
+### Performance Issues
+- Clear browser cache and cookies
+- Restart development servers
+- Check for memory leaks
+- Monitor API response times
+
+## Contributing
+
+We welcome contributions! Here's how:
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Make your changes and test thoroughly
+4. Commit your changes: `git commit -m 'Add amazing feature'`
+5. Push to the branch: `git push origin feature/amazing-feature`
+6. Submit a pull request
+
+### Development Guidelines
+- Follow TypeScript best practices
+- Use consistent code formatting
+- Write meaningful commit messages
+- Test your changes thoroughly
+- Update documentation as needed
+
+## License
+
+This project is licensed under the MIT License.
+
+## Acknowledgments
+
+Thanks to:
+- Yahoo Finance for market data
+- shadcn/ui for beautiful components
+- Tailwind CSS for styling
+- React Query for data fetching
+- Recharts for visualizations
+
+## Support
+
+Need help?
+- Create an issue in the repository
+- Check the troubleshooting section
+- Review the API documentation
+- Contact the development team
+
+---
+
+**Built by Team 15**
 
