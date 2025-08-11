@@ -1,273 +1,426 @@
-# ThemisTrends - Portfolio Management System
+# ThemisTrends — Portfolio Management System
 
-A comprehensive portfolio management and trading platform built with React, TypeScript, and Flask. ThemisTrends provides real-time market data, portfolio tracking, trading capabilities, and advanced analytics.
+A comprehensive portfolio management & trading platform built with **React + TypeScript (Vite)** on the frontend and **Flask + MySQL** on the backend. It provides live market data, portfolio tracking, trading, and analytics.
 
-## 🚀 Features
+---
 
-### Core Functionality
-- **Portfolio Management**: Track holdings, gains/losses, and portfolio performance
-- **Real-time Trading**: Buy and sell stocks with live market data
-- **Market Data**: Real-time stock prices, market indices, and economic indicators
-- **Advanced Analytics**: Performance metrics, sector allocation, and correlation analysis
-- **Transaction History**: Complete trading history with filtering and pagination
+## Table of Contents
 
-### Key Features
-- **Real-time Data**: Live stock prices via yfinance API
-- **Portfolio Analytics**: Sharpe ratio, beta, volatility, and alpha calculations
-- **Market Overview**: S&P 500, NASDAQ, Dow Jones, and Russell 2000 tracking
-- **Economic Indicators**: Treasury yields, commodities, and currency data
-- **Sector Performance**: Real-time sector ETF performance tracking
-- **Responsive Design**: Mobile-friendly interface with modern UI
+- [Quickstart (Copy-Paste)](#quickstart-copy-paste)
+- [Prerequisites & Version Checks](#prerequisites--version-checks)
+- [Project Structure](#project-structure)
+- [Environment Variables](#environment-variables)
+- [Backend Setup (Flask)](#backend-setup-flask)
+- Database Setup (MySQL)
 
-## 🏗️ Project Structure
+  - [Option A: One-shot with ](#option-a-one-shot-with-mastersql)[`master.sql`](#option-a-one-shot-with-mastersql)
+  - [Option B: Run files separately](#option-b-run-files-separately)
 
-```
-portfolio_manager_team15/
-├── client/                          # Frontend React application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── portfolio/           # Portfolio-specific components
-│   │   │   └── ui/                  # Reusable UI components
-│   │   ├── pages/                   # Main application pages
-│   │   ├── hooks/                   # Custom React hooks
-│   │   └── lib/                     # Utility functions
-│   ├── package.json
-│   └── vite.config.ts
-├── backend/                         # Flask API server
-│   ├── app.py                       # Main Flask application
-│   ├── crud.py                      # Database operations
-│   ├── math_operations.py           # Financial calculations
-│   ├── requirements.txt
-│   └── db/                          # Database schema and data
-├── server/                          # Additional server components
-└── shared/                          # Shared TypeScript types
-```
+- [Frontend Setup (React + Vite)](#frontend-setup-react--vite)
+- [Run the Stack](#run-the-stack)
+- [Port & URL Matrix](#port--url-matrix)
+- [Core Features](#core-features)
+- [API Endpoints](#api-endpoints)
+- [Usage Guide](#usage-guide)
+- [Troubleshooting](#troubleshooting)
+- [Security Notes](#security-notes)
+- [Contributing](#contributing)
 
-## 🛠️ Technology Stack
+---
 
-### Frontend
-- **React 18** with TypeScript
-- **Vite** for build tooling
-- **TanStack Query** for data fetching
-- **Recharts** for data visualization
-- **Tailwind CSS** for styling
-- **Lucide React** for icons
+## Quickstart (Copy-Paste)
 
-### Backend
-- **Flask** Python web framework
-- **MySQL** database
-- **yfinance** for market data
-- **requests-cache** for API caching
+> Works on macOS/Linux (bash/zsh) and Windows (PowerShell). Adjust paths as needed.
 
-### Database
-- **MySQL** with custom schema
-- Portfolio items, transactions, and cash balance tracking
+### 1) Clone
 
-## 📋 Prerequisites
-
-Before running this project, ensure you have:
-
-- **Node.js** (v16 or higher)
-- **Python** (v3.8 or higher)
-- **MySQL** database server
-- **Git**
-
-## 🚀 Installation & Setup
-
-### 1. Clone the Repository
 ```bash
 git clone <repository-url>
 cd portfolio_manager_team15
 ```
 
-### 2. Backend Setup
+### 2) Backend (create venv, install, run)
 
-#### Install Python Dependencies
 ```bash
+# macOS/Linux
 cd backend
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env    # then edit values (see below)
+python app.py
 ```
 
-#### Database Setup
-1. Create a MySQL database named `portfolio_manager`
-2. Set up your database credentials in a `.env` file:
+```powershell
+# Windows (PowerShell)
+cd backend
+python -m venv .venv; .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env  # then edit values (see below)
+python app.py
+```
+
+### 3) Database (seed)
+
+Choose **Option A** (`master.sql`) or **Option B** (individual files) under [Database Setup](#database-setup-mysql).
+
+### 4) Frontend (install, run)
+
+```bash
+# from project root
+cd client
+npm install
+npm run dev
+```
+
+---
+
+## Prerequisites & Version Checks
+
+- **Node.js** ≥ 16
+
+  ```bash
+  node -v
+  ```
+
+- **npm** ≥ 8 (or use pnpm/yarn if your project does)
+
+  ```bash
+  npm -v
+  ```
+
+- **Python** ≥ 3.8
+
+  ```bash
+  python --version    # or: python3 --version
+  ```
+
+- **MySQL Server** (local or remote)
+
+  ```bash
+  mysql --version
+  ```
+
+- **Git**
+
+  ```bash
+  git --version
+  ```
+
+> Tip (Windows): If `mysql` isn’t recognized, add MySQL’s `bin` folder to PATH or run with full path, e.g.
+> `"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p`
+
+---
+
+## Project Structure
+
+```
+portfolio_manager_team15/
+├── client/                       # Frontend (React + TS + Vite)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── portfolio/        # Portfolio-specific components
+│   │   │   └── ui/               # Reusable UI components
+│   │   ├── pages/                # Routes / pages
+│   │   ├── hooks/                # Custom React hooks
+│   │   └── lib/                  # Utilities
+│   ├── package.json
+│   └── vite.config.ts
+├── backend/                      # Flask API server
+│   ├── app.py                    # Main Flask application
+│   ├── crud.py                   # DB operations
+│   ├── math_operations.py        # Financial calculations
+│   ├── requirements.txt
+│   └── db/                       # SQL files (see below)
+│       ├── master.sql
+│       ├── schema.sql
+│       ├── procedures.sql
+│       ├── triggers.sql
+│       ├── scheduler.sql
+│       └── data.sql
+└── shared/                       # Shared types / assets (if any)
+```
+
+---
+
+## Environment Variables
+
+Create **`.env`**:
+
 ```env
+# MySQL
 DB_PASSWORD=your_mysql_password
 ```
 
-3. Initialize the database:
+---
+
+## Backend Setup (Flask)
+
 ```bash
-# Run the database initialization scripts
-mysql -u root -p portfolio_manager < db/master.sql
+cd backend
+# Create and activate virtual environment
+python3 -m venv .venv && source .venv/bin/activate    # macOS/Linux
+# or: python -m venv .venv; .\.venv\Scripts\Activate.ps1   # Windows PowerShell
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the server
+python app.py
+# Flask will bind to default http://localhost:8000
 ```
 
-#### Start the Flask Server
+**Included libs (from project docs):**
+
+- `Flask` (web framework)
+- `MySQL` driver (as required by your `requirements.txt`)
+- `yfinance` (market data)
+- `requests-cache` (API caching)
+
+---
+
+## Database Setup (MySQL)
+
+### Option A: One-shot with `master.sql`
+
+This runs everything in the correct order: schema → procedures → triggers → scheduler → data.
+
 ```bash
+# macOS/Linux
+mysql -u root -p portfolio_manager < backend/db/master.sql
+```
+
+```powershell
+# Windows (PowerShell)
+mysql -u root -p portfolio_manager < backend\db\master.sql
+```
+
+### Option B: Run files separately
+
+```bash
+# macOS/Linux
+mysql -u root -p portfolio_manager < backend/db/schema.sql
+mysql -u root -p portfolio_manager < backend/db/procedures.sql
+mysql -u root -p portfolio_manager < backend/db/triggers.sql
+mysql -u root -p portfolio_manager < backend/db/scheduler.sql
+mysql -u root -p portfolio_manager < backend/db/data.sql
+```
+
+```powershell
+# Windows (PowerShell)
+mysql -u root -p portfolio_manager < backend\db\schema.sql
+mysql -u root -p portfolio_manager < backend\db\procedures.sql
+mysql -u root -p portfolio_manager < backend\db\triggers.sql
+mysql -u root -p portfolio_manager < backend\db\scheduler.sql
+mysql -u root -p portfolio_manager < backend\db\data.sql
+```
+
+**What each file does:**
+
+- `schema.sql` — tables, PK/FK constraints
+- `procedures.sql` — stored procedures (e.g., portfolio snapshot rebuilds)
+- `triggers.sql` — automatic updates on insert/update
+- `scheduler.sql` — scheduled DB events (nightly jobs / cleanup)
+- `data.sql` — seed data (e.g., initial \$25,000 cash, sample holdings, transactions)
+- `master.sql` — runs all of the above in order
+
+---
+
+## Frontend Setup (React + Vite)
+
+```bash
+cd client
+npm install
+npm run dev
+# Default UI at http://localhost:5000 (as configured in this project)
+```
+
+---
+
+## Run the Stack
+
+1. **Start MySQL** and ensure the DB is created/seeded.
+2. **Start Backend (Flask)**:
+
+```bash
+cd backend
+source .venv/bin/activate     # macOS/Linux
+# or: .\.venv\Scripts\Activate.ps1   # Windows
 python app.py
 ```
-The backend will run on `http://localhost:8000`
 
-### 3. Frontend Setup
+3. **Start Frontend (React)**:
 
-#### Install Dependencies
 ```bash
-npm install
-```
-
-#### Start the Development Server
-```bash
+cd client
 npm run dev
 ```
-The frontend will run on `http://localhost:5000`
 
-## 📊 Database Schema
+4. **Verify**:
 
-### Key Tables
-- **portfolio_item**: Current holdings with prices and quantities
-- **portfolio_transaction**: Complete transaction history
-- **cash_account**: Cash balance management
-- **portfolio_history**: Historical portfolio values
+- API health: open `http://localhost:8000/api/portfolio`
+- UI: open `http://localhost:5000`
 
-### Sample Data
-The system comes pre-loaded with:
-- Initial $25,000 cash balance
-- Sample stock holdings (AAPL, AMZN, GOOGL, etc.)
-- Historical transaction data
+---
 
-## 🎯 Usage Guide
+## Port & URL Matrix
 
-### Dashboard
-- **Portfolio Overview**: Total value, gains/losses, cash balance
-- **Performance Metrics**: Realized and unrealized gains
-- **Portfolio Chart**: Historical performance visualization
-- **Quick Actions**: Buy/sell stocks, add funds
+| Component | Default Host       | Default Port | How to change                               |
+| --------- | ------------------ | ------------ | ------------------------------------------- |
+| Backend   | `http://localhost` | `8000`       | `BACKEND_PORT` in `backend/.env`            |
+| Frontend  | `http://localhost` | `5000`       | Vite config or `npm run dev -- --port 5000` |
+| MySQL     | `127.0.0.1`        | `3306`       | `DB_PORT` in `backend/.env`                 |
 
-### Portfolio Page
-- **Holdings List**: All current positions with real-time prices
-- **Search & Filter**: Find specific holdings
-- **Sort Options**: Sort by value, gain/loss, shares, or symbol
-- **Pagination**: View 10 holdings per page
-- **Trading Actions**: Buy or sell directly from holdings
+---
 
-### Trading Center
-- **Transaction History**: Complete buy/sell history
-- **Trading Metrics**: Capital deployed, realized gains, activity stats
-- **Filtering**: Search by symbol, filter by transaction type and date
-- **Pagination**: Navigate through transaction history
+## Core Features
 
-### Analytics
-- **Performance Metrics**: Total return, Sharpe ratio, portfolio beta, volatility, alpha
-- **Sector Allocation**: Visual breakdown of portfolio by sector
-- **Correlation Matrix**: Asset correlation analysis
-- **Timeframe Selection**: 1M, 3M, 6M, 1Y, or all-time analysis
+**Core functionality**
 
-### Market Page
-- **Market Indices**: S&P 500, NASDAQ, Dow Jones, Russell 2000
-- **Market Performance**: Intraday performance charts
-- **Economic Indicators**: Treasury yields, commodities, currency data
-- **Sector Performance**: Real-time sector ETF tracking
+- Portfolio management (holdings, gains/losses, performance)
+- Real-time trading (buy/sell)
+- Market data (indices, economic indicators)
+- Advanced analytics (Sharpe, beta, volatility, alpha)
+- Transaction history with filtering & pagination
 
-## 🔧 API Endpoints
+**Key features**
 
-### Portfolio Management
-- `GET /api/portfolio` - Get portfolio data and holdings
-- `POST /api/add-funds` - Add funds to cash account
-- `POST /api/buy-stock` - Buy stock shares
-- `POST /api/sell-stock` - Sell stock shares
+- Real-time data via `yfinance`
+- Sector allocation & correlation analysis
+- Market overview (S\&P 500, NASDAQ, Dow, Russell 2000)
+- Economic indicators (treasuries, commodities, FX)
+- Responsive UI (Tailwind, Recharts, Lucide)
 
-### Market Data
-- `GET /api/market_movers` - Major market indices
-- `GET /api/stocks/<symbol>` - Individual stock data
-- `GET /api/market_performance` - Intraday performance
-- `GET /api/sector_performance` - Sector ETF data
-- `GET /api/economic_indicators` - Economic indicators
+**Tech stack**
 
-### Transactions
-- `GET /api/transactions` - Transaction history
+- Frontend: React 18 + TypeScript, Vite, TanStack Query, Recharts, Tailwind
+- Backend: Flask, `yfinance`, `requests-cache`
+- DB: MySQL (portfolio items, transactions, cash balance, history)
 
-## 🎨 UI Components
+---
 
-### Reusable Components
-- **Navigation**: Header with logo and navigation links
-- **Cards**: Consistent card layouts for data display
-- **Charts**: Line charts, bar charts, pie charts for analytics
-- **Modals**: Buy/sell modals, add funds modal
-- **Tables**: Sortable data tables with pagination
+## API Endpoints
 
-### Styling
-- **Tailwind CSS**: Utility-first CSS framework
-- **Custom Gradients**: Purple and green gradient themes
-- **Responsive Design**: Mobile-first approach
-- **Dark Mode**: Built-in dark theme support
+**Portfolio & Cash**
 
-## 🔄 Data Flow
+- `GET /api/portfolio` — portfolio data & holdings
+- `POST /api/trade` - Handles buy/sell requests from React frontend
+- `POST /api/add-funds` — add funds to cash account
 
-1. **Real-time Updates**: yfinance API provides live market data
-2. **Caching**: requests-cache reduces API calls and improves performance
-3. **State Management**: TanStack Query handles server state and caching
-4. **Database**: MySQL stores portfolio data and transaction history
-5. **Calculations**: Backend handles complex financial calculations
+**Trading**
 
-## 🚨 Error Handling
+- `POST /api/buy-stock` — buy shares
+- `POST /api/sell-stock` — sell shares
 
-- **API Failures**: Graceful fallbacks for market data
-- **Database Errors**: Proper error messages and logging
-- **Network Issues**: Retry mechanisms and offline indicators
-- **Invalid Data**: Input validation and error boundaries
+> Note: Some prior docs used `POST /api/trade` for both buy/sell. If your backend exposes a single trade endpoint, keep using it; otherwise use the explicit `buy-stock` / `sell-stock`.
 
-## 🔒 Security Considerations
+**Market Data**
 
-- **Input Validation**: All user inputs are validated
-- **SQL Injection Prevention**: Parameterized queries
-- **CORS Configuration**: Proper cross-origin resource sharing
-- **Environment Variables**: Sensitive data stored in .env files
+- `GET /api/market_movers` — major indices
+- `GET /api/stocks/:symbol` — individual stock data
+- `GET /api/market_performance` — intraday performance
+- `GET /api/sector_performance` — sector ETF data
+- `GET /api/economic_indicators` — macro indicators
 
-## 📈 Performance Optimizations
+**Transactions**
 
-- **API Caching**: 24-hour cache for market data
-- **Pagination**: Large datasets split into manageable chunks
-- **Lazy Loading**: Components loaded on demand
-- **Image Optimization**: Optimized icons and assets
+- `GET /api/transactions` — full transaction history
 
-## 🧪 Testing
+**Integration**
 
-### Manual Testing Checklist
-- [ ] Portfolio data loads correctly
-- [ ] Buy/sell transactions work
-- [ ] Market data updates in real-time
-- [ ] Analytics calculations are accurate
-- [ ] Mobile responsiveness
-- [ ] Error handling works properly
+This Flask backend connects to existing MySQL database using:
 
-## 🐛 Troubleshooting
+- `portfolio_item` table for current holdings
+- `portfolio_transaction` table for trades
+- `yfinance` for real-time stock prices
+- existing `get_portfolio()` and `handle_trade()` functions
 
-### Common Issues
+## Usage Guide
 
-**Backend won't start:**
-- Check MySQL connection and credentials
-- Ensure all Python dependencies are installed
-- Verify .env file exists with correct database password
+**Dashboard**
 
-**Frontend won't load:**
-- Check if backend is running on port 8000
-- Verify all npm dependencies are installed
-- Check browser console for errors
+- Overview: total value, P/L, cash
+- Performance: realized vs. unrealized
+- Charts: historical performance
+- Quick actions: buy/sell, add funds
 
-**Market data not updating:**
-- Check yfinance API status
-- Verify internet connection
-- Check cache settings in backend
+**Portfolio**
 
-**Database errors:**
-- Ensure MySQL server is running
-- Verify database schema is properly initialized
-- Check database user permissions
+- Real-time holdings
+- Search, filter, sort (value, gain/loss, shares, symbol)
+- Paginated (e.g., 10/page)
+- Inline trading actions
 
-## 🤝 Contributing
+**Trading Center**
 
-1. Fork the repository
+- History: all buys/sells
+- Metrics: capital deployed, realized gains, activity
+- Filters: by symbol, type, date
+- Pagination
+
+**Analytics**
+
+- Total return, Sharpe, beta, volatility, alpha
+- Sector allocation visualization
+- Correlation matrix
+- Timeframes: 1M / 3M / 6M / 1Y / All
+
+**Market**
+
+- Indices: S\&P 500, NASDAQ, Dow, Russell 2000
+- Intraday market performance
+- Economic indicators
+- Sector ETF performance
+
+---
+
+## Troubleshooting
+
+**Backend won’t start**
+
+- Verify virtualenv active and `pip install -r requirements.txt` completed
+- Check `backend/.env` DB settings (host/user/password/database)
+- Ensure MySQL is running and reachable from the backend host/port
+
+**Frontend can’t fetch API**
+
+- Confirm backend is on `http://localhost:8000` (or your chosen port)
+- Set `client/.env` → `VITE_API_BASE=http://localhost:8000`
+- If using a Vite proxy, ensure the proxy target matches the backend port
+
+**MySQL import issues**
+
+- Ensure DB exists: `CREATE DATABASE portfolio_manager;`
+- Use the database in your import command: `mysql -u root -p portfolio_manager < path/to/sql.sql`
+- Windows path quoting: wrap full path in quotes if it includes spaces
+
+**Market data not updating**
+
+- Temporary `yfinance` issues: retry later
+- Clear or shorten cache if `requests-cache` is enabled too aggressively
+
+**Permission errors (Windows)**
+
+- PowerShell execution policy:
+  `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`
+  Then reopen PowerShell
+
+---
+
+## Security Notes
+
+- Always use **parameterized queries** (as implemented in `crud.py`).
+- Keep \*\*secrets in \*\***`.env`** (never commit to VCS).
+- Configure **CORS** to allow your frontend origin only during development.
+- Validate all input on both client and server.
+
+---
+
+## Contributing
+
+1. Fork the repo
 2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+3. Make changes
+4. Test thoroughly (API & UI)
+5. Open a Pull Request with a clear description
 
+---
