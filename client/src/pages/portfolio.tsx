@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Navigation } from "@/components/ui/navigation";
 import { FloatingAIChat } from "@/components/ui/floating-ai-chat";
 import { BuySellModal } from "@/components/portfolio/buy-sell-modal";
-import { TrendingUp, TrendingDown, Search, Filter, ArrowUpDown, DollarSign, Percent, Calendar, Target } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TrendingUp, TrendingDown, Search, Filter, ArrowUpDown, DollarSign, Percent, Calendar, Target, Info } from "lucide-react";
 
 export function Portfolio() {
   const [selectedStock, setSelectedStock] = useState<{symbol: string, price: number, companyName: string} | null>(null);
@@ -126,10 +127,11 @@ export function Portfolio() {
   }, [searchTerm]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto space-y-8">
+    <TooltipProvider>
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="p-6">
+          <div className="max-w-7xl mx-auto space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
@@ -160,7 +162,7 @@ export function Portfolio() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Gain/Loss</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGain || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(portfolioSummary.totalGain || 0) >= 0 ? '+' : ''}${portfolioSummary.totalGain ? portfolioSummary.totalGain.toFixed(2) : "0.00"}
+                      ${Math.abs(portfolioSummary.totalGain || 0).toLocaleString()}
                     </p>
                   </div>
                   {(portfolioSummary.totalGain || 0) >= 0 ? (
@@ -178,7 +180,7 @@ export function Portfolio() {
                   <div>
                     <p className="text-sm text-muted-foreground">Total Return</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                      {(portfolioSummary.totalGainPercent || 0) >= 0 ? '+' : ''}{portfolioSummary.totalGainPercent ? portfolioSummary.totalGainPercent.toFixed(2) : "0.00"}%
+                      {(portfolioSummary.totalGainPercent || 0).toFixed(2)}%
                     </p>
                   </div>
                   <Percent className="w-8 h-8 text-purple-400" />
@@ -238,14 +240,63 @@ export function Portfolio() {
           {/* Holdings Table */}
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-xl font-bold text-foreground">
-                All Holdings ({filteredHoldings.length})
-                {totalPages > 1 && (
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                )}
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xl font-bold text-foreground">
+                  All Holdings ({filteredHoldings.length})
+                  {totalPages > 1 && (
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                  )}
+                </CardTitle>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-muted/50 relative z-10"
+                    >
+                      <Info className="h-5 w-5 text-blue-400 hover:text-blue-300" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left" sideOffset={5} className="max-w-md bg-background border-2 border-blue-200 shadow-lg">
+                    <div className="space-y-4">
+                      <h4 className="font-semibold text-foreground text-lg">Portfolio Holdings Guide</h4>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <h5 className="font-medium text-foreground">📊 Share Details</h5>
+                          <p className="text-sm text-muted-foreground">The number of shares you own and the current market price per share. This shows your ownership stake in the company.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">💰 Cost Information</h5>
+                          <p className="text-sm text-muted-foreground"><strong>Average Cost:</strong> The weighted average price you paid for all shares. <strong>Total Cost:</strong> The total amount you've invested in this position.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">📈 Market Value</h5>
+                          <p className="text-sm text-muted-foreground">The current total value of your position based on the current market price and number of shares you own. Formula: Current Price × Number of Shares</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">📊 Gain/Loss</h5>
+                          <p className="text-sm text-muted-foreground">The percentage change in value from your average cost to the current market price. <span className="text-green-400">Green</span> means you're making money, <span className="text-red-400">red</span> means you're losing money. This is unrealized until you sell.</p>
+                        </div>
+                        
+                        <div>
+                          <h5 className="font-medium text-foreground">🔄 Actions</h5>
+                          <p className="text-sm text-muted-foreground"><strong>Buy:</strong> Purchase more shares. <strong>Sell:</strong> Sell your existing shares to realize gains or cut losses.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">💡 <strong>Tip:</strong> Hover over any holding to see real-time updates. Use the search and sort features to organize your portfolio effectively.</p>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </CardHeader>
             <CardContent>
               {currentHoldings.length > 0 ? (
@@ -285,7 +336,7 @@ export function Portfolio() {
                         <div>
                           <p className="text-sm text-muted-foreground">Gain/Loss</p>
                           <p className={`text-xl font-bold ${(holding.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                            {(holding.change || 0) >= 0 ? '+' : ''}{holding.change ? holding.change.toFixed(2) : "0.00"}%
+                            {(holding.change || 0).toFixed(2)}%
                           </p>
                         </div>
 
@@ -383,6 +434,7 @@ export function Portfolio() {
       )}
 
       <FloatingAIChat />
-    </div>
+        </div>
+      </TooltipProvider>
   );
 }

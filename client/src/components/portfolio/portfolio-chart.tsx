@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown } from "lucide-react";
+
 
 type TimePeriod = '7D' | '30D' | '90D' | 'ALL';
 
@@ -48,25 +49,10 @@ export function PortfolioChart() {
   }));
 
   // Calculate dynamic y-axis formatting based on data range
-  const yAxisFormatter = useMemo(() => {
-    if (chartData.length === 0) return (value: number) => `$${value.toLocaleString()}`;
-    
-    const values = chartData.map(item => item.value);
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
-    const range = maxValue - minValue;
-    
-    if (range >= 100000) {
-      return (value: number) => `$${(value / 1000).toFixed(0)}k`;
-    } else if (range >= 10000) {
-      return (value: number) => `$${(value / 1000).toFixed(1)}k`;
-    } else {
-      return (value: number) => `$${value.toLocaleString()}`;
-    }
-  }, [chartData]);
+  const yAxisFormatter = (value: number) => `$${value.toLocaleString()}`;
 
   // Calculate performance metrics
-  const performanceMetrics = useMemo(() => {
+  const performanceMetrics = (() => {
     if (chartData.length < 2) return { change: 0, changePercent: 0, isPositive: true };
     
     const firstValue = chartData[0].value;
@@ -79,7 +65,7 @@ export function PortfolioChart() {
       changePercent,
       isPositive: change >= 0
     };
-  }, [chartData]);
+  })();
 
   if (isLoading) {
     return (
@@ -105,12 +91,12 @@ export function PortfolioChart() {
                 ) : (
                   <TrendingDown className="w-4 h-4 text-red-400" />
                 )}
-                <span className={`text-sm font-medium ${performanceMetrics.isPositive ? 'text-green-400' : 'text-red-400'}`}>
-                  {performanceMetrics.isPositive ? '+' : ''}{performanceMetrics.changePercent.toFixed(2)}%
+                <span className={`text-sm font-medium ${performanceMetrics.changePercent >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {performanceMetrics.changePercent >= 0 ? '+' : ''}{performanceMetrics.changePercent.toFixed(2)}%
                 </span>
               </div>
-              <span className="text-sm text-muted-foreground">
-                {performanceMetrics.isPositive ? '+' : ''}${performanceMetrics.change.toLocaleString()}
+              <span className={`text-sm ${performanceMetrics.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {performanceMetrics.change >= 0 ? '+' : ''}${Math.abs(performanceMetrics.change).toLocaleString()}
               </span>
             </div>
           )}

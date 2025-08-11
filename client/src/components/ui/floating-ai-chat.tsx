@@ -154,18 +154,18 @@ export function FloatingAIChat() {
             </div>
             <div className="flex items-center space-x-1">
               <Button
-                size="sm"
                 variant="ghost"
+                size="sm"
                 onClick={() => setIsMinimized(!isMinimized)}
-                className="w-8 h-8 p-0 text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20"
               >
                 {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
               </Button>
               <Button
-                size="sm"
                 variant="ghost"
+                size="sm"
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 p-0 text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20"
               >
                 <X className="w-4 h-4" />
               </Button>
@@ -175,69 +175,62 @@ export function FloatingAIChat() {
 
         {!isMinimized && (
           <>
-            <CardContent className="p-0 flex-1">
-              <div className="h-80 overflow-y-auto p-4 space-y-4 bg-slate-900">
-                {messages.length === 0 && (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center">
-                      <Bot className="w-8 h-8 text-white" />
-                    </div>
-                    <p className="text-slate-300 text-sm leading-relaxed">
-                      Hi! I'm your AI investment advisor. Ask me about your portfolio, market trends, or investment strategies.
-                    </p>
+            <div className="h-80 overflow-y-auto p-4 space-y-4 bg-slate-900">
+              {messages.length === 0 && (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-cyan-600 rounded-full flex items-center justify-center">
+                    <Bot className="w-8 h-8 text-white" />
                   </div>
-                )}
+                  <p className="text-slate-300 text-sm leading-relaxed">
+                    Hi! I'm your AI investment advisor. Ask me about your portfolio, market trends, or investment strategies.
+                  </p>
+                </div>
+              )}
 
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={`flex ${msg.isAI ? 'justify-start' : 'justify-end'} space-x-2`}
-                  >
-                    {msg.isAI && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0 mt-1">
-                        <Bot className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                    <div
-                      className={`max-w-xs px-3 py-2 rounded-lg ${
-                        msg.isAI
-                          ? 'bg-slate-700 text-slate-100 border border-slate-600'
-                          : 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white'
-                      }`}
-                    >
-                      <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                      <p className={`text-xs mt-1 ${
-                        msg.isAI ? 'text-slate-400' : 'text-teal-100'
-                      }`}>
-                        {formatTime(msg.timestamp)}
-                      </p>
-                    </div>
-                    {!msg.isAI && (
-                      <div className="w-6 h-6 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center flex-shrink-0 mt-1">
-                        <User className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                  </div>
-                ))}
-
-                {chatMutation.isPending && (
-                  <div className="flex justify-start space-x-2">
+              {messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.isAI ? 'justify-start' : 'justify-end'} space-x-2`}
+                >
+                  {msg.isAI && (
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0 mt-1">
                       <Bot className="w-3 h-3 text-white" />
                     </div>
-                    <div className="bg-slate-700 border border-slate-600 px-3 py-2 rounded-lg">
-                      <div className="flex space-x-1">
-                        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
-                        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                        <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                      </div>
+                  )}
+                  <div
+                    className={`max-w-xs px-3 py-2 rounded-lg ${
+                      msg.isAI
+                        ? 'bg-slate-700 text-slate-100 border border-slate-600'
+                        : 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white'
+                    }`}
+                  >
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className={`text-xs mt-1 ${
+                      msg.isAI ? 'text-slate-400' : 'text-teal-100'
+                    }`}>
+                      {formatTime(msg.timestamp)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              {chatMutation.isPending && (
+                <div className="flex justify-start space-x-2">
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0 mt-1">
+                    <Bot className="w-3 h-3 text-white" />
+                  </div>
+                  <div className="bg-slate-700 text-slate-100 border border-slate-600 rounded-lg px-3 py-2">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-teal-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
-                )}
+                </div>
+              )}
 
-                <div ref={messagesEndRef} />
-              </div>
-            </CardContent>
+              <div ref={messagesEndRef} />
+            </div>
 
             <div className="p-4 border-t border-slate-700 bg-slate-800">
               <form onSubmit={handleSendMessage} className="flex space-x-2">

@@ -6,64 +6,62 @@ import { Button } from "@/components/ui/button";
 export function Navigation() {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16 relative">
-          {/* Logo and Title */}
-          <div className="flex items-center space-x-3">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and Title - Clickable to Settings */}
+          <Link href="/settings" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
             <div className="w-8 h-8 gradient-purple rounded-lg flex items-center justify-center">
               <ChartLine className="text-white w-4 h-4" />
             </div>
             <span className="text-xl font-bold text-foreground">ThemisTrends</span>
+          </Link>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className={`font-medium py-2 px-1 relative transition-colors ${
+              location === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}>
+              Dashboard
+              {location === "/" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
+            </Link>
+            <Link href="/portfolio" className={`font-medium py-2 px-1 relative transition-colors ${
+              location === "/portfolio" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}>
+              Portfolio
+              {location === "/portfolio" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
+            </Link>
+            <Link href="/trading" className={`font-medium py-2 px-1 relative transition-colors ${
+              location === "/trading" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}>
+              Trading
+              {location === "/trading" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
+            </Link>
+            <Link href="/analytics" className={`font-medium py-2 px-1 relative transition-colors ${
+              location === "/analytics" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}>
+              Analytics
+              {location === "/analytics" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
+            </Link>
+            <Link href="/market" className={`font-medium py-2 px-1 relative transition-colors ${
+              location === "/market" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}>
+              Market
+              {location === "/market" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
+            </Link>
           </div>
           
-          {/* Desktop Navigation - Centered */}
-          <div className="hidden md:flex items-center space-x-8 absolute left-1/2 transform -translate-x-1/2">
-              <Link href="/" className={`font-medium py-2 px-1 relative transition-colors ${
-                location === "/" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                Dashboard
-                {location === "/" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
-              </Link>
-              <Link href="/portfolio" className={`font-medium py-2 px-1 relative transition-colors ${
-                location === "/portfolio" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                Portfolio
-                {location === "/portfolio" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
-              </Link>
-              <Link href="/trading" className={`font-medium py-2 px-1 relative transition-colors ${
-                location === "/trading" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                Trading
-                {location === "/trading" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
-              </Link>
-              <Link href="/analytics" className={`font-medium py-2 px-1 relative transition-colors ${
-                location === "/analytics" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                Analytics
-                {location === "/analytics" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
-              </Link>
-              <Link href="/market" className={`font-medium py-2 px-1 relative transition-colors ${
-                location === "/market" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
-              }`}>
-                Market
-                {location === "/market" && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"></div>}
-              </Link>
-            </div>
-          
-          <div className="flex items-center space-x-4">
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="md:hidden p-2"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </Button>
-          </div>
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden p-2"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
         </div>
         
         {/* Mobile Navigation Menu */}

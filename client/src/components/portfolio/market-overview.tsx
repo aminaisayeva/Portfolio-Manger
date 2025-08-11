@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { MarketIndex, StockData } from "@shared/schema";
+import { Card, CardContent } from "@/components/ui/card";
+
 
 export function MarketOverview() {
   const { data: marketData, isLoading } = useQuery({

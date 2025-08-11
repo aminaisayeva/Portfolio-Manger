@@ -1,4 +1,6 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
 import { ArrowRight } from "lucide-react";
 
 interface Position {
@@ -55,8 +57,11 @@ export function HoldingsList({ positions, onBuyClick, onSellClick }: HoldingsLis
             </div>
             <div className="text-right">
               <div className="font-semibold text-foreground">{formatCurrency(position.currentValue)}</div>
-              <div className={`text-sm ${position.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                {position.gain >= 0 ? '+' : ''}{formatCurrency(position.gain)} ({position.gain >= 0 ? '+' : ''}{position.gainPercent.toFixed(2)}%)
+              <div className="text-sm">
+                <span className={`inline ${position.gain >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                  {position.gain >= 0 ? '+' : ''}${Math.abs(position.gain).toLocaleString()}
+                </span> 
+                ({position.gainPercent >= 0 ? '+' : ''}{position.gainPercent.toFixed(2)}%)
               </div>
             </div>
             <div className="flex items-center space-x-2">
