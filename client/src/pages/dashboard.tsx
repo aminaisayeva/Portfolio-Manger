@@ -111,18 +111,18 @@ export default function Dashboard() {
 
           {/* Portfolio Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-            <Card className="bg-card rounded-xl card-glow-blue border border-border">
+            <Card className="bg-card rounded-xl card-glow-blue border border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-blue-500/20">
-                    <DollarSign className="w-5 h-5 text-blue-400" />
+                  <div className="p-2 rounded-lg bg-blue-500/20 shadow-sm">
+                    <DollarSign className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-sm text-muted-foreground font-medium">Total Value</p>
                     <p className="text-2xl font-bold text-foreground">
                       ${(portfolioSummary.totalValue || 0).toLocaleString()}
                     </p>
-                    <p className="text-xs text-muted-foreground">Holdings + Cash</p>
+                    <p className="text-xs text-muted-foreground font-medium">Holdings + Cash</p>
                   </div>
                 </div>
               </CardContent>
@@ -130,10 +130,10 @@ export default function Dashboard() {
 
 
 
-            <Card className="bg-card rounded-xl card-glow-purple border border-border">
+            <Card className="bg-card rounded-xl card-glow-purple border border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
-                  <div className={`p-2 rounded-lg ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                  <div className={`p-2 rounded-lg ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'bg-green-500/20' : 'bg-red-500/20'} shadow-sm`}>
                     {(portfolioSummary.totalGainPercent || 0) >= 0 ? (
                       <ArrowUpRight className="w-5 h-5 text-green-400" />
                     ) : (
@@ -141,24 +141,24 @@ export default function Dashboard() {
                     )}
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Return</p>
+                    <p className="text-sm text-muted-foreground font-medium">Total Return</p>
                     <p className={`text-2xl font-bold ${(portfolioSummary.totalGainPercent || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                       {(portfolioSummary.totalGainPercent || 0).toFixed(2)}%
                     </p>
-                    <p className="text-xs text-muted-foreground">Since Inception</p>
+                    <p className="text-xs text-muted-foreground font-medium">Since Inception</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="bg-card rounded-xl card-glow-orange border border-border">
+            <Card className="bg-card rounded-xl card-glow-orange border border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
-                  <div className="p-2 rounded-lg bg-orange-500/20">
-                    <Target className="w-5 h-5 text-orange-400" />
+                  <div className="p-2 rounded-lg bg-orange-500/20 shadow-sm">
+                    <Target className="w-5 h-5 text-orange-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Cash Balance</p>
+                    <p className="text-sm text-muted-foreground font-medium">Cash Balance</p>
                     <p className="text-2xl font-bold text-foreground">
                       ${(portfolioSummary.cashBalance || 0).toLocaleString()}
                     </p>
@@ -168,7 +168,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Realized Gains Card */}
-            <Card className="bg-card rounded-xl card-glow-emerald border border-border">
+            <Card className="bg-card rounded-xl card-glow-emerald border border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${(portfolioSummary.realizedGains || 0) >= 0 ? 'bg-emerald-500/20' : 'bg-red-500/20'}`}>
@@ -215,7 +215,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Unrealized Gains Card */}
-            <Card className="bg-card rounded-xl card-glow-cyan border border-border">
+            <Card className="bg-card rounded-xl card-glow-cyan border border-border hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-center space-x-3">
                   <div className={`p-2 rounded-lg ${(portfolioSummary.unrealizedGains || 0) >= 0 ? 'bg-cyan-500/20' : 'bg-red-500/20'}`}>
@@ -266,11 +266,11 @@ export default function Dashboard() {
           <PortfolioChart />
 
           {/* Holdings */}
-          <Card className="bg-card rounded-xl card-glow-blue border border-border">
+          <Card className="bg-card rounded-xl card-glow-blue border border-border hover:shadow-lg transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-xl font-bold text-foreground">Your Holdings</CardTitle>
               <Link href="/portfolio">
-                <Button variant="ghost" size="sm" className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10">
+                <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 hover:bg-blue-500/10 border border-transparent hover:border-blue-200 transition-all">
                   <Globe className="w-4 h-4 mr-2" />
                   View All
                 </Button>
@@ -279,9 +279,9 @@ export default function Dashboard() {
             <CardContent>
               <div className="space-y-4">
                 {holdings.slice(0, 3).map((holding: any, index: number) => (
-                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-muted/50 transition-colors">
+                  <div key={index} className="flex items-center justify-between p-4 rounded-lg bg-background hover:bg-muted/50 transition-all border border-transparent hover:border-border/50 hover:shadow-sm">
                     <div className="flex items-center space-x-4">
-                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-sm
+                      <div className={`w-12 h-12 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-sm
                         ${holding.symbol === 'AAPL' ? 'bg-gray-600' : 
                           holding.symbol === 'TSLA' ? 'bg-red-600' :
                           holding.symbol === 'GOOGL' ? 'bg-blue-600' :
@@ -292,12 +292,12 @@ export default function Dashboard() {
                       </div>
                       <div>
                         <h3 className="font-semibold text-foreground">{holding.company_name || holding.name}</h3>
-                        <p className="text-sm text-muted-foreground">{holding.volume} shares</p>
+                        <p className="text-sm text-muted-foreground font-medium">{holding.volume} shares</p>
                       </div>
                     </div>
                     <div className="text-right mr-6">
                       <p className="text-lg font-semibold text-foreground">${((holding.price || 0) * (holding.volume || 0)).toLocaleString()}</p>
-                      <p className={`text-sm flex items-center ${(holding.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <p className={`text-sm flex items-center font-medium ${(holding.change || 0) >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {(holding.change || 0) >= 0 ? (
                           <ArrowUpRight className="w-4 h-4 mr-1" />
                         ) : (
@@ -310,7 +310,7 @@ export default function Dashboard() {
                       <Button 
                         size="sm" 
                         variant="destructive" 
-                        className="bg-red-600 hover:bg-red-700"
+                        className="bg-red-600 hover:bg-red-700 shadow-sm"
                         onClick={() => openSellModal({
                           symbol: holding.symbol,
                           price: holding.price || 0,
@@ -321,7 +321,7 @@ export default function Dashboard() {
                       </Button>
                       <Button 
                         size="sm" 
-                        className="gradient-green text-white"
+                        className="gradient-green text-white shadow-sm hover:shadow-md transition-shadow"
                         onClick={() => openBuyModal({
                           symbol: holding.symbol,
                           price: holding.price || 0,
@@ -335,7 +335,7 @@ export default function Dashboard() {
                 ))}
                 {holdings.length === 0 && (
                   <div className="text-center py-8">
-                    <p className="text-muted-foreground">No holdings yet. Start investing to see your portfolio here.</p>
+                    <p className="text-muted-foreground font-medium">No holdings yet. Start investing to see your portfolio here.</p>
                   </div>
                 )}
               </div>
@@ -361,7 +361,7 @@ export default function Dashboard() {
         onClose={() => setShowAddFunds(false)}
       />
 
-      <FloatingAIChat />
+     
         </div>
       </TooltipProvider>
   );
