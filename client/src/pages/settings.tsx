@@ -417,8 +417,9 @@ export function Settings() {
                       </p>
                       <Button 
                         onClick={() => exportPortfolioData('full')} 
-                        className="w-full"
+                        variant="outline"
                         size="sm"
+                        className="w-full border-2 hover:border-purple-300"
                         disabled={exportLoading.full}
                       >
                         {exportLoading.full ? "Exporting..." : <Download className="w-4 h-4 mr-2" />}
@@ -431,27 +432,27 @@ export function Settings() {
                   <div className="bg-muted/30 rounded-lg p-4 border border-border">
                     <h5 className="font-semibold text-foreground mb-4 text-lg">Full Export Includes:</h5>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-blue-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">General Portfolio Summary</span>
                       </div>
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-green-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">Current Holdings & Positions</span>
                       </div>
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-yellow-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">Transaction History</span>
                       </div>
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-purple-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">Performance Analytics</span>
                       </div>
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-red-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">Dividend History</span>
                       </div>
-                      <div className="flex items-center space-x-3 p-2 rounded-md bg-white/50 border border-border/50">
+                      <div className="flex items-center space-x-3 p-2 rounded-md bg-muted/50 border border-border hover:shadow-sm transition-shadow">
                         <div className="w-3 h-3 bg-indigo-600 rounded-full shadow-sm"></div>
                         <span className="text-foreground font-medium">Risk Metrics & Analysis</span>
                       </div>

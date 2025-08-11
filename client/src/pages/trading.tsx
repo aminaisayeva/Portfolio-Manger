@@ -226,7 +226,7 @@ export function Trading() {
           </Card>
 
           <Card className="bg-card border-border hover:border-green-500/30 transition-all hover:shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between space-y-2">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Realized Gains</CardTitle>
               <TrendingUp className="h-4 w-4 text-green-400" />
             </CardHeader>
